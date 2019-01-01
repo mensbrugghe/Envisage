@@ -1,0 +1,15 @@
+* -------------------------------------------------
+*   General Option file for CONOPT3
+* -------------------------------------------------
+* Maximum and minimum jacobian element
+rtmaxj = 1.00e+30
+rtmaxv = 1.00e+30
+* iteration log frequency
+lfilos =  1
+lfilog =  1
+lsismp = t
+lspost = false
+rtpiva = 1.E-15
+*rtnwmi = 4.E-11
+*rtnwma = 5.E-7
+Lmmxsf = 1
