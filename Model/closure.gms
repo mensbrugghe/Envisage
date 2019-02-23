@@ -19,7 +19,7 @@ pxghg.fx(r,a,v,t) = pxghg.l(r,a,v,t) ;
 *  Consumer demand parameters for the 'LES' type utility functions
 
 if(%utility%=CD or %utility%=LES or %utility%=ELES or %utility%=AIDADS,
-  theta.fx(r,k,h,t) = theta.l(r,k,h,t) ;
+   gammac.fx(r,k,h,t) = gammac.l(r,k,h,t) ;
    if(%utility%=CD or %utility%=LES or %utility%=ELES,
       muc.fx(r,k,h,t) = muc.l(r,k,h,t) ;
    ) ;
@@ -130,10 +130,16 @@ remit.fx(rp,l,r,t)$(remit0(rp,l,r) eq 0) = 0 ;
 
 ygov.fx(r,gy,t)$(ygov0(r,gy) eq 0)     = 0 ;
 
+xfd.fx(r,fd,t)$(not fdFlag(r,fd))      = 0 ;
+yfd.fx(r,fd,t)$(not fdFlag(r,fd))      = 0 ;
+pfd.fx(r,fd,t)$(not fdFlag(r,fd))      = pfd.l(r,fd,t) ;
+rfdshr.fx(r,fd,t)$(not fdFlag(r,fd))   = 0 ;
+nfdshr.fx(r,fd,t)$(not fdFlag(r,fd))   = 0 ;
+
 xc.fx(r,k,h,t)$(not xcFlag(r,k,h))         = xc.l(r,k,h,t) ;
 pc.fx(r,k,h,t)$(not xcFlag(r,k,h))         = pc.l(r,k,h,t) ;
 hshr.fx(r,k,h,t)$(not xcFlag(r,k,h))       = hshr.l(r,k,h,t) ;
-theta.fx(r,k,h,t)$(not xcFlag(r,k,h))      = theta.l(r,k,h,t) ;
+zcons.fx(r,k,h,t)$(not xcFlag(r,k,h))      = zcons.l(r,k,h,t) ;
 xcnnrg.fx(r,k,h,t)$(not xcnnrgFlag(r,k,h)) = xcnnrg.l(r,k,h,t) ;
 pcnnrg.fx(r,k,h,t)$(not xcnnrgFlag(r,k,h)) = pcnnrg.l(r,k,h,t) ;
 xcnrg.fx(r,k,h,t)$(not xcnrgFlag(r,k,h))   = xcnrg.l(r,k,h,t) ;
@@ -227,3 +233,4 @@ ph2obndndx.fx(r,wbnd,t)$(not h2obndFlag(r,wbnd)) = ph2obndndx.l(r,wbnd,t) ;
 emi.fx(r,em,is,aa,t)$(not emir(r,em,is,aa)) = 0 ;
 emiTot.fx(r,em,t)$(emiTot0(r,em) = 0)       = 0 ;
 emiGbl.fx(em,t)$(emiGbl0(em) = 0)           = 0 ;
+evf.fx(r,fdc,t)$(fdFlag(r,fdc) = 0)         = 0 ;

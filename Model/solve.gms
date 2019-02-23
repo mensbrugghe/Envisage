@@ -94,7 +94,7 @@ remit.up(r,l,rp,tsim)$remit0(r,l,rp) = +inf ;
 if(ifMCP,
    solve %1 using mcp ;
 else
-   solve %1 using nlp minimizing walras ;
+   solve %1 using nlp minimizing obj ;
 ) ;
 
 put screen ;
@@ -139,7 +139,7 @@ if(ifSUB,
 
 omegaad.fx(r,h)
       = (sum(k$xcFlag(r,k,h), (betaad.l(r,k,h,tsim)-alphaad.l(r,k,h,tsim))
-      *     log(xc.l(r,k,h,tsim)*xc0(r,k,h)/(pop0(r)*pop.l(r,tsim)) - theta0(r,k,h)*theta.l(r,k,h,tsim)))
+      *     log(xc.l(r,k,h,tsim)*xc0(r,k,h)/(pop0(r)*pop.l(r,tsim)) - gammac.l(r,k,h,tsim)))
       - power(1+exp(u.l(r,h,tsim)*u0(r,h)),2)*exp(-u.l(r,h,tsim)*u0(r,h)))
       $(%utility% eq AIDADS)
 
@@ -165,9 +165,9 @@ etah.l(r,k,h,tsim)$xcFlag(r,k,h)
 
 epsh.l(r,k,kp,h,tsim)$(xcFlag(r,k,h) and xcFlag(r,kp,h))
 
-   = (-muc0(r,k,h)*muc.l(r,k,h,tsim)*pc.l(r,kp,h,tsim)*pop.l(r,tsim)*theta.l(r,kp,h,tsim)
-   *  pc0(r,kp,h)*theta0(r,kp,h)/(pc.l(r,k,h,tsim)*xc.l(r,k,h,tsim)*pc0(r,k,h)*xc0(r,k,h))
-   - kron(k,kp)*(1 - pop.l(r,tsim)*theta.l(r,k,h,tsim)*pop0(r)*theta0(r,k,h)
+   = (-muc0(r,k,h)*muc.l(r,k,h,tsim)*pc.l(r,kp,h,tsim)*pop.l(r,tsim)*gammac.l(r,kp,h,tsim)
+   *  pc0(r,kp,h)/(pc.l(r,k,h,tsim)*xc.l(r,k,h,tsim)*pc0(r,k,h)*xc0(r,k,h))
+   - kron(k,kp)*(1 - pop.l(r,tsim)*gammac.l(r,k,h,tsim)*pop0(r)
    / (xc.l(r,k,h,tsim)*xc0(r,k,h))))$(%utility% eq ELES)
 
    + ((muc.l(r,kp,h,tsim)*muc0(r,kp,h)-kron(k,kp))

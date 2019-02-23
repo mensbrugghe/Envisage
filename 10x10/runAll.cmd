@@ -9,7 +9,7 @@ goto BaU
 
 set ifError=0
 copy runsim.gms runBaU.gms
-call gams runBaU --simName=BaU --BauName=BaU --startName=XXX --startYear=2030 --simType=RcvDyn --ifCal=1 --baseName=%baseName% --odir=%oDir% -idir=..\model -scrdir=%oDir% -ps=99999 -pw=150 -errmsg=1
+call gams runBaU --simName=BaU --BauName=BaU --startName=BaU --startYear=2007 --simType=RcvDyn --ifCal=1 --baseName=%baseName% --odir=%oDir% -idir=..\model -scrdir=%oDir% -ps=99999 -pw=150 -errmsg=1
 echo.ErrorLevel = !errorlevel!
 if %errorlevel% NEQ 0 (
    goto simError

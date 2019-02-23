@@ -74,7 +74,7 @@ xpv.l(r,a,v,tsim)        = rwork(r)*xpv.l(r,a,v,tsim-1) ;
 xp.l(r,a,tsim)           = sum(v, xpv.l(r,a,v,tsim)) ;
 x.l(r,a,i,tsim)          = rwork(r)*x.l(r,a,i,tsim-1) ;
 p.l(r,a,i,tsim)          = p.l(r,a,i,tsim-1) ;
-pp.l(r,a,i,tsim)         = p.l(r,a,i,tsim-1) ;
+pp.l(r,a,i,tsim)         = pp.l(r,a,i,tsim-1) ;
 ps.l(r,i,tsim)           = ps.l(r,i,tsim-1) ;
 xpow.l(r,elyc,tsim)      = rwork(r)*xpow.l(r,elyc,tsim-1) ;
 ppow.l(r,elyc,tsim)      = ppow.l(r,elyc,tsim-1) ;
@@ -114,6 +114,7 @@ ntmY.l(r,tsim)           = rwork(r)*ntmY.l(r,tsim-1) ;
 pfd.l(r,fd,tsim)         = pfd.l(r,fd,tsim-1) ;
 yfd.l(r,fd,tsim)         = rwork(r)*yfd.l(r,fd,tsim-1) ;
 ev.l(r,h,tsim)           = rwork(r)*ev.l(r,h,tsim-1) ;
+evf.l(r,fdc,tsim)        = rwork(r)*evf.l(r,fdc,tsim-1) ;
 xat.l(r,i,tsim)          = rwork(r)*xat.l(r,i,tsim-1) ;
 xdt.l(r,i,tsim)          = rwork(r)*xdt.l(r,i,tsim-1) ;
 xmt.l(r,i,tsim)          = rwork(r)*xmt.l(r,i,tsim-1) ;
@@ -159,6 +160,12 @@ trent.l(r,tsim)         = trent.l(r,tsim-1) ;
 kxRat.l(r,a,v,tsim)     = kxRat.l(r,a,v,tsim-1) ;
 rrat.l(r,a,tsim)        = rrat.l(r,a,tsim-1) ;
 arent.l(r,tsim)         = arent.l(r,tsim-1) ;
+k0.l(r,a,tsim)          = sum(v, kv.l(r,a,v,tsim-1))*power(1-depr(r,tsim-1), gap(tsim)) ;
+kslo.l(r,a,tsim)        = k0.l(r,a,tsim) ;
+kslo.up(r,a,tsim)       = k0.l(r,a,tsim) ;
+kslo.lo(r,a,tsim)       = 0 ;
+kshi.lo(r,a,tsim)       = 0 ;
+kshi.l(r,a,tsim)        = 0.05*kslo.l(r,a,tsim) ;
 
 ptland.l(r,tsim)        = ptland.l(r,tsim-1) ;
 ptlandndx.l(r,tsim)     = ptlandndx.l(r,tsim-1) ;
@@ -205,10 +212,8 @@ rgdppc.l(r,tsim)        = (rwork(r)/(popT(r,"PTOTL",tsim)/popT(r,"PTOTL",tsim-1)
                         *  rgdppc.l(r,tsim-1) ;
 grrgdppc.l(r,tsim)      = grrgdppc.l(r,tsim-1) ;
 
-rgovshr.l(r,tsim)       = rgovshr.l(r,tsim-1) ;
-govshr.l(r,tsim)        = govshr.l(r,tsim-1) ;
-rinvshr.l(r,tsim)       = rinvshr.l(r,tsim-1) ;
-invshr.l(r,tsim)        = invshr.l(r,tsim-1) ;
+rfdshr.l(r,fd,tsim)     = rfdshr.l(r,fd,tsim-1) ;
+nfdshr.l(r,fd,tsim)     = nfdshr.l(r,fd,tsim-1) ;
 
 kstock.l(r,tsim)        = rwork(r)*kstock.l(r,tsim-1) ;
 tkaps.l(r,tsim)         = rwork(r)*tkaps.l(r,tsim-1) ;
@@ -218,6 +223,17 @@ tland.l(r,tsim)         = tland.l(r,tsim-1) ;
 pop.l(r,tsim)           = (popT(r,"PTOTL",tsim)/popT(r,"PTOTL",tsim-1))*pop.l(r,tsim-1) ;
 
 skillprem.l(r,l,tsim)   = skillprem.l(r,l,tsim-1) ;
+
+sw.l(tsim) = ((sum((r,h), welfwgt(r,tsim)*pop0(r)*pop.l(r,tsim)
+           *   (ev0(r,h)*ev.l(r,h,tsim)/(pop0(r)*pop.l(r,tsim)))**(1-epsw(tsim)))/(1-epsw(tsim)))
+           /  sum(r,pop0(r)*pop.l(r,tsim)))/sw0 ;
+
+swt.l(tsim) = ((sum((r,h), welftwgt(r,tsim)*pop0(r)*pop.l(r,tsim)
+            *   ((ev0(r,h)*ev.l(r,h,tsim) + sum(gov, evf0(r,gov)*evf.l(r,gov,tsim)))
+            /    (pop0(r)*pop.l(r,tsim)))**(1-epsw(tsim)))/(1-epsw(tsim)))
+            /  sum(r,pop0(r)*pop.l(r,tsim)))/swt0 ;
+
+obj.l = sw.l(tsim) ;
 
 if(0,
    invGFact.l(r,tsim)      = invGFact.l(r,tsim-1) ;

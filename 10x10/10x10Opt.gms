@@ -48,15 +48,17 @@ sets
 ;
 
 parameters
-   years(tt)
-   firstYear
-   finalYear
-   gap(t)
+   years(tt)      "Contains years in value (dynamic)"
+   firstYear      "First year of full time horizon"
+   baseYear       "Simulation base year"
+   finalYear      "Simulation final year"
+   gap(t)         "Time-step"
 ;
 
 years(tt) = ord(tt) ;
 gap(t)    = 1 ;
-loop(t0, firstYear = years(t0) ; ) ;
+firstYear = smin(tt,years(tt)) ;
+loop(t0, baseYear = years(t0) ; ) ;
 finalYear = smax(t,years(t)) ;
 
 Scalars
@@ -72,7 +74,7 @@ $elseifi "%simType%" == "RcvDyn"
 
 $macro PUTYEAR years(t):4:0
 sets
-   tt       "Full time horizon"                / 2007*2100 /
+   tt       "Full time horizon"                / 1960*2100 /
    t(tt)    "Simulation time horizon"          / 2011, 2014, 2017, 2020, 2025, 2030 /
 *  t(tt)    "Simulation time horizon"          / 2011*2050 /
    t0(t)    "Base year"                        / 2011 /
@@ -84,15 +86,17 @@ sets
 ;
 
 parameters
-   years(tt)
-   firstYear
-   finalYear
-   gap(t)
+   years(tt)      "Contains years in value (dynamic)"
+   firstYear      "First year of full time horizon"
+   baseYear       "Simulation base year"
+   finalYear      "Simulation final year"
+   gap(t)         "Time-step"
 ;
 
-years(tt) = 2006 + ord(tt) ;
+firstYear = smin(tt, tt.val) ;
+years(tt) = firstYear - 1 + ord(tt) ;
 gap(t)    = 1$t0(t) + (years(t) - years(t-1))$(not t0(t)) ;
-loop(t0, firstYear = years(t0) ; ) ;
+loop(t0, baseYear = years(t0) ; ) ;
 finalYear = smax(t,years(t)) ;
 
 Scalars
@@ -151,13 +155,13 @@ scalars
 *  CSV results go to this file
 
 file
-   fsam   / "%odir%/%SIMNAME%SAM.csv" /
+   fsam   / %odir%\%SIMNAME%SAM.csv /
    screen / con /
 ;
 
 *  This file is optional--sometimes useful to debug model
 
-file debug / "%odir%/%SIMNAME%DBG.csv" / ;
+file debug / %odir%\%SIMNAME%DBG.csv / ;
 if(0,
    put debug ;
    put "Var,Region,Sector,Qual,Year,Value" / ;

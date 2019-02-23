@@ -48,12 +48,18 @@ $offtext
 
 acronyms KELAS, LOGIST, HYPERB, INFTY, CD, LES, ELES, AIDADS, CDE, capFlexGTAP, capFlexUSAGE, capFix, capRFix, capFlexINF ;
 
-set rs(r)         "Region(s) to be included in simulation" ;
-rs(r) = yes ;
-set fixER(r)      "Regions with a fixed ER" ;
-fixER(r) = no ;
+sets
+   rs(r)             "Region(s) to be included in simulation"
+   fixER(r)          "Regions with a fixed ER"
+;
+rs(r)       = yes ;
+fixER(r)    = no ;
+
 alias(r,rr) ;
 alias(k, kp) ; alias(k, k1) ; alias(v,vp) ;
+alias(ty,tt) ;
+alias(f,fp) ;
+
 set ixn(i)        "All non-energy commodities" ; ixn(i)$(not e(i)) = yes ;
 scalar ifGbl      "Flag to determine if model is run in global mode" / 1 / ;
 scalar ifNCO2     "Flag to determine if we have non-CO2 gases" ;
@@ -61,8 +67,7 @@ scalar savfFlag   "Flag determining capital account closure" ;
 scalar NTMFlag    "Flag determining presence of NTMs"                / 0 / ;
 scalar ifInitFlag "Flag determining whether a baseline was read in"  / 0 / ;
 scalar startYear  "Year to which the sim should be initialized" ;
-startYear = firstYear ;
-alias(f,fp) ;
+startYear = baseYear ;
 
 Parameters
 
@@ -280,13 +285,10 @@ Parameters
 
    phiNRG(r,fuel,aa)       "Combustion ratio for fuel demand"
 
-*  Parameters for price indices
+*  Social welfare function weights
 
-   phiw(r,i,rp,t)
-   chimuv
-   phia(r,i,fd,t)
-   chi(r,fd)
-   phipw(r,a,t)
+   welfwgt(r,t)            "Weights for private consumption"
+   welftwgt(r,t)           "Weights for private+public consumption"
 
 *  Miscellaneous parameters
 
@@ -360,7 +362,10 @@ Parameters
    xcolgFlag(r,k,h)        "Flag for OLG bundle in consumption"
    xacNRGFlag(r,k,h,NRG)   "Flag for NRG bundles in consumption"
 
+   fdFlag(r,fd)            "Flag for FD expenditures"
+
    hWasteFlag(r,i,h)       "Flag for waste function in household consumption"
+   lambdac(r,i,k,h,t)      "Commodity efficiency shifter in consumption"
 
    xatFlag(r,i)            "Flag for aggregate Armington demand"
    xddFlag(r,i)            "Flag for XDD bundle"
@@ -485,7 +490,7 @@ Parameters
 
    supy0(r,h)           "Per capita supernumerary income"
    muc0(r,k,h)          "Marginal budget shares"
-   theta0(r,k,h)        "Consumption auxiliary variable"
+   zcons0(r,k,h)        "Consumption auxiliary variable"
    xc0(r,k,h)           "Household consumption of consumer good k"
    hshr0(r,k,h)         "Household budget shares"
    u0(r,h)              "Utility level"
@@ -611,10 +616,9 @@ Parameters
 *
 *  rsg0(r)             "Real government savings"
 *
-*  rgovshr0(r)         "Volume share of gov. expenditure in real GDP"
-*  govshr0(r)          "Value share of gov. expenditure in nominal GDP"
-*  rinvshr0(r)         "Volume share of inv. expenditure in real GDP"
-*  invshr0(r)          "Value share of inv. expenditure in nominal GDP"
+*
+*  rfdshr0(r,fd)       "Volume share of final demand in real GDP"
+*  nfdshr0(r,fd)       "Value share of final demand in nominal GDP"
 *
    xfd0(r,fd)          "Volume of aggregate final demand expenditures"
 
@@ -672,6 +676,10 @@ Parameters
    pop0(r)             "Population"
 
    ev0(r,h)             "Initial EV"
+   evf0(r,fd)           "Initial EV for final demand"
+   sw0                  "Initial level for social welfare"
+   swt0                 "Initial level for total social welfare"
+
 *
 *  Currently non explained variables
 *
@@ -795,6 +803,7 @@ variables
    supy(r,h,t)             "Per capita supernumerary income"
    xc(r,k,h,t)             "Household consumption of consumer good k"
    hshr(r,k,h,t)           "Household budget shares"
+   zcons(r,k,h,t)          "Auxiliary consumption variable for CDE"
    u(r,h,t)                "Utility level"
 
    xcnnrg(r,k,h,t)         "Demand for non-energy bundle of consumer good k"
@@ -883,6 +892,8 @@ variables
    trent(r,t)              "Aggregate return to capital"
 
    k0(r,a,t)               "Installed capital at beginning of period"
+   kslo(r,a,t)             "Supply of old capital"
+   kshi(r,a,t)             "Supply of new capital"
    kxRat(r,a,v,t)          "Capital output ratio by sector"
    rrat(r,a,t)             "Ratio of return to Old wrt to New capital"
 
@@ -925,10 +936,8 @@ variables
 
    rsg(r,t)                "Real government savings"
 
-   rgovshr(r,t)            "Volume share of gov. expenditure in real GDP"
-   govshr(r,t)             "Value share of gov. expenditure in nominal GDP"
-   rinvshr(r,t)            "Volume share of inv. expenditure in real GDP"
-   invshr(r,t)             "Value share of inv. expenditure in nominal GDP"
+   rfdshr(r,fd,t)          "Volume share of final demand expenditure in real GDP"
+   nfdshr(r,fd,t)          "Value share of final demand expenditure in nominal GDP"
 
    kappaf(r,f,a,t)         "Income tax on factor income"
    kappah(r,t)             "Direct tax rate"
@@ -950,7 +959,7 @@ variables
    pwgdp(t)                "Global gdp deflator"
    pnum(t)                 "Model numéraire"
    pw(a,t)                 "World price of activity a"
-   walras                  "Value of Walras"
+   walras(t)               "Value of Walras"
 
 *  Macro variables
 
@@ -991,7 +1000,7 @@ variables
 
 *  Calibrated parameters
 
-   theta(r,k,h,t)          "Subsistence minima"
+   gammac(r,k,h,t)          "Subsistence minima"
    muc(r,k,h,t)            "Marginal propensity to consume"
    mus(r,h,t)              "Marginal propensity to save"
    betac(r,h,t)            "Consumption shifter"
@@ -1048,6 +1057,11 @@ variables
 
 *  Post-simulation variables
    ev(r,h,t)               "Equivalent income at base year prices"
+   evf(r,fd,t)             "Final demand expenditure function"
+   sw(t)                   "Social welfare function--private consumption"
+   swt(t)                  "Social welfare function--private and public consumption"
+
+   obj                     "Objective function"
 ;
 
 equations
@@ -1140,7 +1154,7 @@ equations
    yfdInveq(r,inv,t)       "Investment balance"
 
    supyeq(r,h,t)           "Per capita supernumerary income for ELES"
-   thetaeq(r,k,h,t)        "Auxiliary consumption variable for CDE"
+   zconseq(r,k,h,t)        "Auxiliary consumption variable for CDE"
    muceq(r,k,h,t)          "Marginal budger shares for AIDADS"
    xceq(r,k,h,t)           "Aggregate private consumption by sector in k commodity space"
    hshreq(r,k,h,t)         "Household budget shares"
@@ -1225,17 +1239,19 @@ equations
    pkeq(r,a,v,t)           "Sectoral return to capital"
    trenteq(r,t)            "Aggregate return to capital"
 
-   kxRateq(r,a,v,t)        "Capital output ratio"
-   rrateq(r,a,t)           "Relative rate of return between Old and New capital"
-
    k0eq(r,a,t)             "Beginning of period installed capital"
+   ksloeq(r,a,t)           "Supply of old capital"
+   kshieq(r,a,t)           "Supply of new capital"
+   ksloinfeq(r,a,t)        "Supply of old capital with infinite elasticity"
+   kshiinfeq(r,a,t)        "Supply of new capital with infinite elasticity"
+   rrateq(r,a,t)           "Relative rate of return between Old and New capital"
+   kxRateq(r,a,v,t)        "Capital output ratio"
    xpveq(r,a,v,t)          "Allocation between old and new capital"
 
    capeq(r,cap,a,t)        "Total capital demand by activity"
    pcapeq(r,cap,a,t)       "Average capital remuneration by activity"
 
    arenteq(r,t)            "Average return to capital"
-
    tlandeq(r,t)            "Total land supply equation"
    xlb1eq(r,lb,t)          "Supply of first land bundle"
    xnlbeq(r,t)             "Supply of intermediate land bundle"
@@ -1266,10 +1282,8 @@ equations
    savgeq(r,t)             "Nominal government savings"
    rsgeq(r,t)              "Real government savings"
 
-   rgovshreq(r,t)          "Volume share of gov. expenditure in real GDP"
-   govshreq(r,t)           "Value share of gov. expenditure in nominal GDP"
-   rinvshreq(r,t)          "Volume share of inv. expenditure in real GDP"
-   invshreq(r,t)           "Value share of inv. expenditure in nominal GDP"
+   rfdshreq(r,fd,t)        "Volume share of final demand expenditure in real GDP"
+   nfdshreq(r,fd,t)        "Value share of final demand expenditure in nominal GDP"
 
    kstockeeq(r,t)          "Anticipated end-of-period capital stock"
    roreq(r,t)              "Net aggregate rate of return to capital"
@@ -1298,7 +1312,7 @@ equations
    pnumeq(t)               "Model numéraire"
    pweq(a,t)               "World price of activity a"
 
-   walraseq                "Walras' Law"
+   walraseq(t)             "Walras' Law"
 
    emiieq(r,em,i,aa,t)     "Consumption based emissions"
    emifeq(r,em,fp,a,t)     "Factor-use based emissions"
@@ -1320,6 +1334,11 @@ equations
    lambdafeq(r,l,a,t)      "Labor productivity factor"
 
    eveq(r,h,t)             "Equivalent income at base year prices"
+   evfeq(r,fdc,t)          "Expenditure function for other final demand"
+   sweq(t)                 "Social welfare function--private consumption"
+   swteq(t)                "Social welfare function--private + public consumption"
+
+   objeq                   Objective function
 ;
 
 * --------------------------------------------------------------------------------------------------
@@ -1956,7 +1975,8 @@ deprYeq(r,t)$(ts(t) and rs(r) and deprY0(r))..
 
 ntmYeq(r,t)$(ts(t) and rs(r) and NTMFlag)..
    ntmY0(r)*ntmY(r,t)
-      =e= sum((s,i), ntmAVE(s,i,r,t)*pwm_sub(s,i,r,t)*pwm0(s,i,r)*lambdaw(s,i,r,t)*xw(s,i,r,t)*xw0(s,i,r)) ;
+      =e= sum((s,i), pwm0(s,i,r)*xw0(s,i,r)
+       *                ntmAVE(s,i,r,t)*pwm_sub(s,i,r,t)*lambdaw(s,i,r,t)*xw(s,i,r,t)) ;
 
 *  Outflow of capital income
 
@@ -2062,7 +2082,8 @@ ygoveq(r,gy,t)$(ts(t) and rs(r) and ygov0(r,gy))..
 
 *  Add the waste tax(es)
 
-   +   ((sum((i,h)$hWasteFlag(r,i,h), (xawc0(r,i,h)*xawc(r,i,h,t))*(pa0(r,i,h)*pa_sub(r,i,h,t)*wtaxh(r,i,h,t)
+   +   ((sum((i,h)$hWasteFlag(r,i,h), (xawc0(r,i,h)*(pa0(r,i,h)*xawc(r,i,h,t))
+   *     pa_sub(r,i,h,t)*wtaxh(r,i,h,t)
    +     wtaxhx(r,i,h,t)*pfd0(r,h)*pfd(r,h,t))))/ygov0(r,gy))$wtx(gy)
 
 *  Carbon tax
@@ -2077,11 +2098,12 @@ ygoveq(r,gy,t)$(ts(t) and rs(r) and ygov0(r,gy))..
 
 *  Investment income
 
-yfdInveq(r,inv,t)$(ts(t) and rs(r) and ((ifGbl and not rres(r)) or (not ifGbl)))..
+yfdInveq(r,inv,t)$(ts(t) and rs(r))..
    yfd(r,inv,t) =e= sum(h, savh(r,h,t)*savh0(r,h)/yfd0(r,inv))
                  +         savg(r,t)/yfd0(r,inv)
                  +         pwsav(t)*savf(r,t)/yfd0(r,inv)
                  +         deprY0(r)*deprY(r,t)/yfd0(r,inv)
+                 +  walras(t)$(ifGbl and rres(r))
                  ;
 
 * --------------------------------------------------------------------------------------------------
@@ -2097,28 +2119,28 @@ supyeq(r,h,t)$(ts(t) and rs(r)
    supy(r,h,t) =e= ((yd(r,t)-(savh(r,h,t)*(savh0(r,h)/yd0(r)))
                 $    (%utility%=CD or %utility%=LES or %utility%=AIDADS))
                 /    pop(r,t))*(yd0(r)/(pop0(r)*supy0(r,h)))
-                -  sum(k, pc(r,k,h,t)*theta(r,k,h,t)*pc0(r,k,h)*theta0(r,k,h)/supy0(r,h)) ;
+                -  sum(k, pc(r,k,h,t)*gammac(r,k,h,t)*pc0(r,k,h)/supy0(r,h)) ;
 
 *  CDE auxiliary variable
 
-thetaeq(r,k,h,t)$(ts(t) and rs(r) and xcFlag(r,k,h) and %utility%=CDE)..
-   theta(r,k,h,t) =e= alphah(r,k,h,t)*bh(r,k,h,t)
+zconseq(r,k,h,t)$(ts(t) and rs(r) and xcFlag(r,k,h) and %utility%=CDE)..
+   zcons(r,k,h,t) =e= alphah(r,k,h,t)*bh(r,k,h,t)
                    *    ((pc(r,k,h,t)*u(r,h,t)**eh(r,k,h,t))**bh(r,k,h,t))
                    *    ((yd(r,t) - (savh0(r,h)/yd0(r))*savh(r,h,t))**(-bh(r,k,h,t)))
                    *    ((pc0(r,k,h)*pop0(r)*pop(r,t)*u0(r,h)**eh(r,k,h,t))**bh(r,k,h,t))
-                   *    ((yd0(r)**(-bh(r,k,h,t)))/theta0(r,k,h))
+                   *    ((yd0(r)**(-bh(r,k,h,t)))/zcons0(r,k,h))
                    ;
 
 *  Household consumption in household commodity space
 
 xceq(r,k,h,t)$(ts(t) and rs(r) and xcFlag(r,k,h))..
-   0 =e= (xc(r,k,h,t) - (pop0(r)*pop(r,t)*(theta(r,k,h,t)*theta0(r,k,h)/xc0(r,k,h)
+   0 =e= (xc(r,k,h,t) - (pop0(r)*pop(r,t)*(gammac(r,k,h,t)/xc0(r,k,h)
                       + (betac(r,h,t)*muc(r,k,h,t)*supy(r,h,t)/pc(r,k,h,t))
                       * (muc0(r,k,h)*supy0(r,h)/(pc0(r,k,h)*xc0(r,k,h))))))
                       $(%utility%=CD or %utility%=LES or %utility%=ELES or %utility%=AIDADS)
 
-      +  (hshr(r,k,h,t) - (theta(r,k,h,t)*theta0(r,k,h)/hshr0(r,k,h))
-      /     sum(kp$xcFlag(r,kp,h), theta0(r,kp,h)*theta(r,kp,h,t)))$(%utility%=CDE) ;
+      +  (hshr(r,k,h,t) - (zcons(r,k,h,t)*zcons0(r,k,h)/hshr0(r,k,h))
+      /     sum(kp$xcFlag(r,kp,h), zcons0(r,kp,h)*zcons(r,kp,h,t)))$(%utility%=CDE) ;
 
 *  Household budget share (out of expenditures on goods and services)
 
@@ -2146,10 +2168,10 @@ ueq(r,h,t)$(ts(t) and rs(r))..
 
       +  (u(r,h,t)*u0(r,h) + 1 + log(aad(r,h,t))
       -   sum(k$xcFlag(r,k,h), muc0(r,k,h)*muc(r,k,h,t)*
-            log(xc(r,k,h,t)*xc0(r,k,h)/(pop0(r)*pop(r,t)) - theta0(r,k,h)*theta(r,k,h,t))))
+            log(xc(r,k,h,t)*xc0(r,k,h)/(pop0(r)*pop(r,t)) - gammac(r,k,h,t))))
       $(%utility%=CD or %utility%=LES or %utility%=AIDADS)
 
-      +  (1 - sum(k$xcFlag(r,k,h), theta0(r,k,h)*theta(r,k,h,t)/bh(r,k,h,t)))$(%utility%=CDE)
+      +  (1 - sum(k$xcFlag(r,k,h), zcons0(r,k,h)*zcons(r,k,h,t)/bh(r,k,h,t)))$(%utility%=CDE)
       ;
 
 *  Demand for non-energy bundle by households
@@ -2180,12 +2202,13 @@ pc.lo(r,k,h,t) = 0.001 ;
 
 xacnnrgeq(r,ixn,h,t)$(ts(t) and rs(r) and xaFlag(r,ixn,h))..
    xa(r,ixn,h,t) =e= sum(k$ac(r,ixn,k,h), (ac(r,ixn,k,h)*(xcnnrg0(r,k,h)/xa0(r,ixn,h))
-                  *    (pcnnrg0(r,k,h)/pa0(r,ixn,h))**nunnrg(r,k,h))
+                  *    ((pcnnrg0(r,k,h)/pa0(r,ixn,h))**nunnrg(r,k,h))
+                  *    (lambdac(r,ixn,k,h,t)**(nunnrg(r,k,h)-1)))
                   *     xcnnrg(r,k,h,t)*(pcnnrg(r,k,h,t)/pah(r,ixn,h,t))**nunnrg(r,k,h)) ;
 
 pcnnrgeq(r,k,h,t)$(ts(t) and rs(r) and xcnnrgFlag(r,k,h))..
    pcnnrg(r,k,h,t)**(1-nunnrg(r,k,h)) =e= sum(ixn$ac(r,ixn,k,h),
-         (ac(r,ixn,k,h)*(pa0(r,ixn,h)/pcnnrg0(r,k,h))**(1-nunnrg(r,k,h)))
+         (ac(r,ixn,k,h)*(pa0(r,ixn,h)/(lambdac(r,ixn,k,h,t)*pcnnrg0(r,k,h)))**(1-nunnrg(r,k,h)))
       *   pah(r,ixn,h,t)**(1-nunnrg(r,k,h))) ;
 
 pcnnrg.lo(r,k,h,t) = 0.001 ;
@@ -2328,7 +2351,7 @@ xafeq(r,i,fdc,t)$(ts(t) and rs(r) and xa0(r,i,fdc))..
                   *     (pfd0(r,fdc)/pa0(r,i,fdc))**sigmafd(r,fdc))
                   *  xfd(r,fdc,t)* (pfd(r,fdc,t)/PA_SUB(r,i,fdc,t))**sigmafd(r,fdc) ;
 
-pfdfeq(r,fdc,t)$(ts(t) and rs(r))..
+pfdfeq(r,fdc,t)$(ts(t) and rs(r) and fdFlag(r,fdc))..
    pfd(r,fdc,t)**(1-sigmafd(r,fdc)) =e= sum(i,
          (alphafd(r,i,fdc,t)*(pa0(r,i,fdc)/pfd0(r,fdc))**(1-sigmafd(r,fdc)))
       *  PA_SUB(r,i,fdc,t)**(1-sigmafd(r,fdc))) ;
@@ -2351,7 +2374,7 @@ $endif
 xfdheq(r,h,t)$(ts(t) and rs(r))..
    yfd(r,h,t) =e= sum(i, pah(r,i,h,t)*xa(r,i,h,t)*(pa0(r,i,h)*xa0(r,i,h)/yfd0(r,h))) ;
 
-yfdeq(r,fd,t)$(ts(t) and rs(r))..
+yfdeq(r,fd,t)$(ts(t) and rs(r) and fdFlag(r,fd))..
    yfd(r,fd,t) =e= pfd(r,fd,t)*xfd(r,fd,t)*(pfd0(r,fd)*xfd0(r,fd)/yfd0(r,fd)) ;
 
 * --------------------------------------------------------------------------------------------------
@@ -2590,7 +2613,8 @@ pwmeq(r,i,rp,t)$(ts(t) and rs(r) and xwFlag(r,i,rp) and not ifSUB)..
    +  tmarg(r,i,rp,t)*PWMG_SUB(r,i,rp,t)/(lambdaw(r,i,rp,t)*pwm0(r,i,rp)) ;
 
 pdmeq(r,i,rp,t)$(ts(t) and rs(r) and xwFlag(r,i,rp) and not ifSUB and not MRIO)..
-   pdm(r,i,rp,t) =e= (1 + mtax(r,i,rp,t) + ntmAVE(r,i,rp,t))*pwm(r,i,rp,t)*(pwm0(r,i,rp)/pdm0(r,i,rp)) ;
+   pdm(r,i,rp,t) =e= (1 + mtax(r,i,rp,t) + ntmAVE(r,i,rp,t))*pwm(r,i,rp,t)
+                  *     (pwm0(r,i,rp)/pdm0(r,i,rp)) ;
 
 pe.lo(r,i,rp,t) = 0.001 ;
 
@@ -2743,21 +2767,61 @@ trenteq(r,t)$(ts(t) and rs(r))..
 
 *  Capital market -- dynamics
 
-kxRateq(r,a,vOld,t)$(ts(t) and rs(r) and ifVint and kFlag(r,a))..
-   kxRat(r,a,vOld,t) =e= (kv(r,a,vOld,t)/xpv(r,a,vOld,t))
-                      *  (kv0(r,a)/(kxRat0(r,a)*xpv0(r,a))) ;
-
-rrateq(r,a,t)$(ts(t) and rs(r) and ifVint and kflag(r,a))..
-   rrat(r,a,t)**invElas(r,a) =l= sum(vOld, kxrat(r,a,vOld,t))*xp(r,a,t)
-                                        *  (kxRat0(r,a)*xp0(r,a)/(k00(r,a)*k0(r,a,t))) ;
-
-rrat.up(r,a,t) = 1 ;
+*  Initialize the installed capital stock (could be made exogenous)
 
 k0eq(r,a,t)$(ts(t) and ifVint and kFlag(r,a))..
    k0(r,a,t) =e= sum(v, (kv0(r,a)/k00(r,a))*kv(r,a,v,t-1))*power(1-depr(r,t-1), gap(t)) ;
 
+*  Capital supply for finite disinvestment elasticity
+
+ksloeq(r,a,t)$(ts(t) and ifVint and invElas(r,a) ne inf and kfFlag(r,a))..
+   ((kslo(r,a,t)/k0(r,a,t))**(1/invElas(r,a)) - rrat(r,a,t))$(invElas(r,a))
+   +  (kslo(r,a,t) - k0(r,a,t))$(invElas(r,a) eq 0) =g= 0 ;
+
+kshieq(r,a,t)$(ts(t) and ifVint and invElas(r,a) ne inf and kfFlag(r,a))..
+   1 - rrat(r,a,t) =g= 0 ;
+
+*  Capital supply for infinite disinvestment elasticity
+
+ksloinfeq(r,a,t)$(ts(t) and ifVint and invElas(r,a) eq inf and kfFlag(r,a))..
+   kslo(r,a,t) =e= sum(vOld, kv(r,a,vOld,t)) ;
+
+kshiinfeq(r,a,t)$(ts(t) and ifVint and invElas(r,a) eq inf and kfFlag(r,a))..
+   rrat(r,a,t) =e= 1 ;
+
+rrateq(r,a,t)$(ts(t) and ifVint and kfFlag(r,a))..
+   kslo(r,a,t) + kshi(r,a,t) =l= sum(v, kv(r,a,v,t)) ;
+
+$ontext
+rrateq(r,a,t)$(ts(t) and rs(r) and ifVint and kflag(r,a))..
+   rrat(r,a,t)**invElas(r,a) =l= sum(vOld, kxrat(r,a,vOld,t))*xp(r,a,t)
+                                        *  (kxRat0(r,a)*xp0(r,a)/(k00(r,a)*k0(r,a,t))) ;
+$offtext
+
+rrat.up(r,a,t) = 1 ;
+
+
+kxRateq(r,a,vOld,t)$(ts(t) and rs(r) and ifVint and kFlag(r,a))..
+   kxRat(r,a,vOld,t) =e= (kv(r,a,vOld,t)/xpv(r,a,vOld,t))
+                      *  (kv0(r,a)/(kxRat0(r,a)*xpv0(r,a))) ;
+
 *  Vintage output allocation
 
+xpveq(r,a,v,t)$(ts(t) and rs(r) and xpFlag(r,a))..
+
+*     The first condition is only used for the vintage model
+
+   0 =e= (xpv(r,a,v,t)*kxRat(r,a,v,t)*(xpv0(r,a)*kxRat0(r,a)/kv0(r,a)) - kslo(r,a,t))
+      $(vOld(v) and ifVint)
+
+*     The following condition is good for CS and Vintage
+
+      +  (xp(r,a,t) - sum(vp, xpv(r,a,vp,t)*(xpv0(r,a)/xp0(r,a))))
+      $vNew(v) ;
+
+*  Vintage output allocation
+
+$ontext
 xpveq(r,a,v,t)$(ts(t) and rs(r) and xpFlag(r,a))..
 
 *     The first condition is only used for the vintage model
@@ -2770,6 +2834,7 @@ xpveq(r,a,v,t)$(ts(t) and rs(r) and xpFlag(r,a))..
 
       +  (xp(r,a,t) - sum(vp, xpv(r,a,vp,t)*(xpv0(r,a)/xp0(r,a))))
       $vNew(v) ;
+$offtext
 
 xpv.lo(r,a,vOld,t) = 0.001 ;
 
@@ -3144,7 +3209,8 @@ klrateq(r,t)$(ts(t) and rs(r))..
 
 savgeq(r,t)$(ts(t) and rs(r))..
    savg(r,t) =e= sum(gy, ygov0(r,gy)*ygov(r,gy,t)) + sum(em,emiQuotaY(r,em,t))
-              +  ntmY0(r)*ntmY(r,t)*(1 - sum(s$(not sameas(s,r)), chigNTM(s,r,t)) - sum(s, chihNTM(s,r,t)))
+              +  ntmY0(r)*ntmY(r,t)
+              *      (1 - sum(s$(not sameas(s,r)), chigNTM(s,r,t)) - sum(s, chihNTM(s,r,t)))
               +  sum(s$(not sameas(s,r)), chigNTM(s,r,t)*ntmY0(s)*ntmY(s,t))
               +  ODAIn0(r)*ODAIn(r,t) - ODAOut0(r)*ODAOut(r,t)
               -  sum(gov, yfd0(r,gov)*yfd(r,gov,t)) ;
@@ -3152,23 +3218,22 @@ savgeq(r,t)$(ts(t) and rs(r))..
 rsgeq(r,t)$(ts(t) and rs(r))..
    rsg(r,t)*pgdpmp(r,t)*pgdpmp0(r) =e= savg(r,t) ;
 
-rgovshreq(r,t)$(ts(t) and rs(r))..
-   rgovshr(r,t)*rgdpmp(r,t) =e= sum(gov, xfd(r,gov,t)*(xfd0(r,gov)/rgdpmp0(r))) ;
+*  Share of real expenditures wrt to GDP
 
-govshreq(r,t)$(ts(t) and rs(r))..
-   govshr(r,t)*gdpmp(r,t) =e= sum(gov, yfd(r,gov,t)*(yfd0(r,gov)/gdpmp0(r))) ;
+rfdshreq(r,fd,t)$(ts(t) and rs(r) and fdFlag(r,fd))..
+   rfdshr(r,fd,t)*rgdpmp(r,t) =e= xfd(r,fd,t)*(xfd0(r,fd)/rgdpmp0(r)) ;
 
-rinvshreq(r,t)$(ts(t) and rs(r))..
-   rinvshr(r,t)*rgdpmp(r,t) =e= sum(inv, xfd(r,inv,t)*(xfd0(r,inv)/rgdpmp0(r))) ;
+*  Share of nominal expenditures wrt to GDP
 
-invshreq(r,t)$(ts(t) and rs(r))..
-   invshr(r,t)*gdpmp(r,t) =e= sum(inv, yfd(r,inv,t)*(yfd0(r,inv)/gdpmp0(r))) ;
+nfdshreq(r,fd,t)$(ts(t) and rs(r) and fdFlag(r,fd))..
+   nfdshr(r,fd,t)*gdpmp(r,t) =e= yfd(r,fd,t)*(yfd0(r,fd)/gdpmp0(r)) ;
 
 kstockeeq(r,t)$(ts(t) and rs(r))..
    kstocke(r,t) =e= (1-depr(r,t))*kstock(r,t) + sum(inv, xfd(r,inv,t)*xfd0(r,inv)/kstock0(r)) ;
 
 roreq(r,t)$(ts(t) and rs(r))..
-   ror(r,t)*ror0(r) =e= sum((a,cap,v),(1-kappaf(r,cap,a,t))*pk(r,a,v,t)*kv(r,a,v,t)*pk0(r,a)*kv0(r,a))
+   ror(r,t)*ror0(r) =e= sum((a,cap,v),(1-kappaf(r,cap,a,t))*pk(r,a,v,t)*kv(r,a,v,t)
+                     *     pk0(r,a)*kv0(r,a))
                      /    (kstock(r,t)*kstock0(r)) ;
 
 rorceq(r,t)$(ts(t) and rs(r))..
@@ -3176,7 +3241,8 @@ rorceq(r,t)$(ts(t) and rs(r))..
 
 roreeq(r,t)$(ts(t) and rs(r))..
    rore(r,t)*rore0(r) =e= (rorc(r,t)*rorc0(r)*(kstocke(r,t)/kstock(r,t))**(-epsRor(r,t)))
-                       $(savfFlag eq capFlexGTAP or savfFlag eq capFix or savfFlag eq capRFix or savfFlag eq capFlexINF)
+                       $(savfFlag eq capFlexGTAP or savfFlag eq capFix
+                           or savfFlag eq capRFix or savfFlag eq capFlexINF)
                        +  ((ror(r,t)*ror0(r)/sum(inv,pfd(r,inv,t)*pfd0(r,inv))
                        +      (1 - depr(r,t)))/(1+intRate) - 1)
                        $(savfFlag eq capFlexUSAGE) ;
@@ -3194,8 +3260,10 @@ savfeq(r,t)$(ts(t) and rs(r))..
    0 =e= (riskPrem(r,t)*rore(r,t)*rore0(r) - rorg(t)*rorg0)$(savfFlag eq capFlexGTAP)
       +  (riskPrem(r,t)*rorc(r,t)*rorc0(r) - rorg(t)*rorg0)$(savfFlag eq capFlexINF)
 *     +  (riskPrem(r,t)*trent(r,t)*trent0(r) - rorg(t)*rorg0)$(savfFlag eq capFlexINF)
-      +  (savf(r,t) - savfBar(r,t))$((savfFlag eq capFix and not rres(r) and not fixER(r)) or (not ifGBL))
-      +  (pwsav(t)*savf(r,t) - savfRat(r,t)*gdpmp(r,t)*gdpmp0(r))$(savfFlag eq capRFix and not rres(r))
+      +  (savf(r,t) - savfBar(r,t))
+      $     ((savfFlag eq capFix and not rres(r) and not fixER(r)) or (not ifGBL))
+      +  (pwsav(t)*savf(r,t) - savfRat(r,t)*gdpmp(r,t)*gdpmp0(r))
+      $     (savfFlag eq capRFix and not rres(r))
       +  (sum(rp, savf(rp,t)))$((savfFlag eq capFix or savfFlag eq capRFix) and rres(r) and ifGBL)
       +  (grk(r,t) - (grKMax(r,t)*exp(chigrK(r,t)*devRoR(r,t)) + grKMin(r,t)*logasc(r,t))
                    /  (exp(chigrK(r,t)*devRoR(r,t)) + logasc(r,t)))$(savfFlag eq capFlexUSAGE)
@@ -3208,7 +3276,8 @@ $macro netInvShr(r,t) (sum(inv, yfd(r,inv,t)*yfd0(r,inv) - pfd(r,inv,t)*pfd0(r,i
 
 rorgeq(t)$(ts(t) and ifGbl)..
    0 =e= (sum(r, savf(r,t)))$(savfFlag ne capFix and savfFlag ne capRFix)
-      +  (rorg(t)*rorg0 - sum(r, netInvShr(r,t)*rore(r,t)*rore0(r)))$(savfFlag eq capFix or savfFlag eq capRFix) ;
+      +  (rorg(t)*rorg0 - sum(r, netInvShr(r,t)*rore(r,t)*rore0(r)))
+      $     (savfFlag eq capFix or savfFlag eq capRFix) ;
 
 $macro mQMUV(tp,tq) (sum((s,i,d)$(rmuv(s) and imuv(i)), (pwe0(s,i,d)*xw0(s,i,d))*PWE_SUB(s,i,d,tp)*xw(s,i,d,tq)))
 
@@ -3271,20 +3340,14 @@ $else
             *                 (mQX(a,t,t)/mQX(a,t-1,t))) ;
 $endif
 
-walraseq..
-   walras =e= (sum(t$ts(t), sum(rres, sum(inv, yfd(rres,inv,t)*yfd0(rres,inv))
-           -  (sum(h, savh(rres,h,t)*savh0(rres,h)) + savg(rres,t)
-           +      pwsav(t)*savf(rres,t) + deprY0(rres)*deprY(rres,t)))))
-           $ifGbl
-
-           +  (sum(t$ts(t),
-                  sum(r$rs(r), sum((i,rp), pwe0(r,i,rp)*PWE_SUB(r,i,rp,t)*xw0(r,i,rp)*xw(r,i,rp,t)
-           -      pwm0(rp,i,r)*PWM_SUB(rp,i,r,t)*lambdaw(rp,i,r,t)*xw0(rp,i,r)*xw(rp,i,r,t))
-           +      sum(img, (pdt0(r,img)*pdt(r,img,t))*xtt(r,img,t)*xtt0(r,img)) + pwsav(t)*savf(r,t)
-           +      yqht0(r)*yqht(r,t) - yqtf0(r)*yqtf(r,t)
-           +      ODAIn0(r)*ODAIn(r,t) - ODAOut0(r)*ODAOut(r,t)
-           +      sum((rp,l),remit0(r,l,rp)*remit(r,l,rp,t)-remit0(rp,l,r)*remit(rp,l,r,t)))))
-           $(not ifGBL) ;
+walraseq(t)$(not ifGbl)..
+   walras(t) =e=  sum(r$rs(r), sum((i,rp), pwe0(r,i,rp)*PWE_SUB(r,i,rp,t)*xw0(r,i,rp)*xw(r,i,rp,t)
+              -      pwm0(rp,i,r)*PWM_SUB(rp,i,r,t)*lambdaw(rp,i,r,t)*xw0(rp,i,r)*xw(rp,i,r,t))
+              +      sum(img, (pdt0(r,img)*pdt(r,img,t))*xtt(r,img,t)*xtt0(r,img)) + pwsav(t)*savf(r,t)
+              +      yqht0(r)*yqht(r,t) - yqtf0(r)*yqtf(r,t)
+              +      ODAIn0(r)*ODAIn(r,t) - ODAOut0(r)*ODAOut(r,t)
+              +      sum((rp,l),remit0(r,l,rp)*remit(r,l,rp,t)-remit0(rp,l,r)*remit(rp,l,r,t)))
+              ;
 
 * --------------------------------------------------------------------------------------------------
 *
@@ -3411,7 +3474,8 @@ tkapseq(r,t)$(ts(t) and rs(r))..
 
 lambdafeq(r,l,a,t)$(ts(t) and rs(r) and xfFlag(r,l,a))..
    lambdaf(r,l,a,t) =e= lambdaf(r,l,a,t-1)
-      * power(1 + chiglab(r,l,t) + glAddShft(r,l,a,t) + glMltShft(r,l,a,t)*gl(r,t), gap(t)) ;
+      * power(1 + chiglab(r,l,t) + glAddShft(r,l,a,t) + glMltShft(r,l,a,t)*gl(r,t),
+         gap(t)) ;
 
 *  Equivalent variation at base year prices
 *  !!!! Check formulas for non-CDE
@@ -3430,10 +3494,28 @@ eveq(r,h,t)$(1 and ts(t) and rs(r))..
       $(%utility%=ELES and uFlag(r,h))
 
       +  (1 - log(ev0(r,h)*ev(r,h,t)/(pop0(r)*pop(r,t))
-      -     sum(k$xcFlag(r,k,h), pc0(r,k,h)*sum(t0,pc(r,k,h,t0))*theta(r,k,h,t)*theta0(r,k,h)))
+      -     sum(k$xcFlag(r,k,h), pc0(r,k,h)*sum(t0,pc(r,k,h,t0))*gammac(r,k,h,t)))
       +    log(aad(r,h,t)) + u(r,h,t)*u0(r,h))
       $(%utility% ne CDE and %utility% ne ELES)
       ;
+
+evfeq(r,fdc,t)$(ts(t) and rs(r) and fdFlag(r,fdc))..
+   evf(r,fdc,t) =e= (yfd0(r,fdc)/evf0(r,fdc))*sum(t0, pfd(r,fdc,t0))*(yfd(r,fdc,t)/pfd(r,fdc,t)) ;
+
+sweq(t)$(ts(t))..
+   sw(t)*sw0 =e= (sum((r,h), welfwgt(r,t)*pop0(r)*pop(r,t)
+              *   (ev0(r,h)*ev(r,h,t)/(pop0(r)*pop(r,t)))**(1-epsw(t)))/(1-epsw(t)))
+              /  sum(r,pop0(r)*pop(r,t)) ;
+
+swteq(t)$(ts(t))..
+   swt(t)*swt0 =e= (sum((r,h), welftwgt(r,t)*pop0(r)*pop(r,t)
+                *   ((ev0(r,h)*ev(r,h,t) + sum(gov, evf0(r,gov)*evf(r,gov,t)))
+                /    (pop0(r)*pop(r,t)))**(1-epsw(t)))/(1-epsw(t)))
+                /  sum(r,pop0(r)*pop(r,t)) ;
+
+objeq..
+   obj =e= sum(t$ts(t), sw(t)) ;
+
 
 *  !!!! Pairings are not complete as some depend on closure. To look into.
 
@@ -3471,7 +3553,7 @@ model core /
    ygoveq.ygov, yfdInveq.xfd,
 
 *  supyeq.supy, thetaeq.theta, xceq.xc, hshreq.hshr,
-   supyeq.supy, thetaeq.theta, xceq.xc, hshreq.hshr, muceq.muc, ueq.u,
+   supyeq.supy, zconseq.zcons, xceq.xc, hshreq.hshr, muceq.muc, ueq.u,
    xcnnrgeq.xcnnrg, xcnrgeq.xcnrg, pceq.pc,
    xacnnrgeq.xa, pcnnrgeq.pcnnrg,
    xcnelyeq.xcnely, xcolgeq.xcolg, xacNRGeq.xacNRG, xaceeq.xa,
@@ -3500,6 +3582,7 @@ model core /
 
    pkeq.pk, trenteq.trent,
 *  kxRateq.kxRat, rrateq.rrat, trentVinteq.trent, pkVinteq.pk,
+   ksloeq.kslo, kshieq.kshi, ksloinfeq.kslo, kshiinfeq.kshi,
    kxRateq.kxRat, rrateq.rrat,
    k0eq.k0, xpveq.xpv, arenteq.arent, capeq.xf, pcapeq.pf,
 
@@ -3519,7 +3602,7 @@ model core /
    rgdppceq.rgdppc,
 
    savgeq.savg, rsgeq.kappah,
-   rgovshreq.rgovshr, govshreq.govshr, rinvshreq, invshreq.invshr,
+   rfdshreq, nfdshreq.nfdshr,
    kstockeeq.kstocke, roreq.ror, rorceq.rorc, roreeq.rore, savfeq, savfRateq, rorgeq,
    devRoReq.devRoR, grkeq.grK,
    pmuveq.pmuv, pfacteq, pwfacteq, pwgdpeq.pwgdp, pwsaveq.pwsav, pnumeq, pweq,
@@ -3527,9 +3610,9 @@ model core /
    emiieq.emi, emifeq.emi, emixeq.emi, emiToteq.emiTot, emiGbleq.emiGbl,
    emiCapeq.emiRegTax, emiTaxeq.emiTax, emiQuotaYeq.emiQuotaY,
 
-   eveq.ev,
+   eveq.ev, evfeq.evf, sweq.sw, swteq.swt,
 
-   walraseq
+   walraseq, objeq
 / ;
 
 core.holdfixed = 1 ;

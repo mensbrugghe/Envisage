@@ -17,32 +17,34 @@ if(0,
    )
 else
 *  !!!! Careful with scale here!
-*  savfBar(r,t)$(years(t) gt FirstYear) = inscale*savfT(t,r) ;
-   savfBar(r,t)$(years(t) gt FirstYear) = savfT(t,r) ;
+*  savfBar(r,t)$(years(t) gt baseYear) = inscale*savfT(t,r) ;
+   savfBar(r,t)$(years(t) gt baseYear) = savfT(t,r) ;
 ) ;
 
-*fixER("RestofWorld")$(years(tsim) gt FirstYear) = yes ;
-*pfact.fx("RestofWorld",tsim)$(years(tsim) gt FirstYear) = 1.03*pfact.l("RestofWorld",tsim-1) ;
+*fixER("RestofWorld")$(years(tsim) gt baseYear) = yes ;
+*pfact.fx("RestofWorld",tsim)$(years(tsim) gt baseYear) = 1.03*pfact.l("RestofWorld",tsim-1) ;
 
 *  Make savings endogenous in baseline and investment fixed
 
 if(ifCal,
-   loop((r,t0)$(years(tsim) gt years(t0)),
+   loop((r,inv,t0)$(years(tsim) gt years(t0)),
       if(invTargetT(r,tsim) ne na,
          chiaps.lo(r,tsim)  = -inf ;
          chiaps.up(r,tsim)  = +inf ;
-         chiaps.l(r,tsim)   = chiaps.l(r,tsim-1) ;
-         rinvshr.fx(r,tsim) = 0.01*invTargetT(r,tsim) ;
+         if(ifInitFlag ne 1 or years(tsim) gt startYear ,
+            chiaps.l(r,tsim)   = chiaps.l(r,tsim-1) ;
+         ) ;
+         rfdshr.fx(r,inv,tsim) = 0.01*invTargetT(r,tsim) ;
       else
-         chiaps.fx(r,tsim)  = chiaps.l(r,tsim-1) ;
-         rinvshr.lo(r,tsim) = -inf ;
-         rinvshr.up(r,tsim) = +inf ;
+         chiaps.fx(r,tsim)     = chiaps.l(r,tsim-1) ;
+         rfdshr.lo(r,inv,tsim) = -inf ;
+         rfdshr.up(r,inv,tsim) = +inf ;
       ) ;
    ) ;
 else
    chiaps.fx(r,tsim)  = chiaps.l(r,tsim) ;
-   rinvshr.lo(r,tsim) = -inf ;
-   rinvshr.up(r,tsim) = +inf ;
+   rfdshr.lo(r,inv,tsim) = -inf ;
+   rfdshr.up(r,inv,tsim) = +inf ;
 ) ;
 
 *  Tease a first solution for 2012

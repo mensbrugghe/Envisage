@@ -421,7 +421,7 @@ if(ifCSVVerbose,
 
 if(%utility%=ELES,
    put3t(muc, r, k, h)
-   put3t(theta, r, k, h)
+   put3t(gammac, r, k, h)
 else
    put3t(bh, r, k, h)
    put3t(eh, r, k, h)

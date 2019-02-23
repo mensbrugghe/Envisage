@@ -54,12 +54,12 @@ if(ifSAM,
          loop(kp, put sim.tl,"epsh",r.tl,k.tl,kp.tl,"",PUTYEAR,(epsh.l(r,k,kp,h,t)) / ; ) ;
          if(%utility% ne CDE,
             put sim.tl,"muc",r.tl,k.tl,"","",PUTYEAR,(muc0(r,k,h)*muc.l(r,k,h,t)) / ;
-            putv2(theta,k,h,0,outScale)
+            put sim.tl,"gammac",r.tl,k.tl,"","",PUTYEAR,(gammac.l(r,k,h,t)) / ;
          ) ;
          if(%utility% eq CDE,
             put sim.tl,"eh",r.tl,k.tl,"","",PUTYEAR,(eh.l(r,k,h,t)) / ;
             put sim.tl,"bh",r.tl,k.tl,"","",PUTYEAR,(bh.l(r,k,h,t)) / ;
-            putv2(theta,k,h,0,1)
+            putv2(zcons,k,h,0,1)
          ) ;
       ) ;
       loop((r,h),
@@ -104,6 +104,9 @@ if(ifSAM,
             putv1(pfd,fd,0,1)
             put sim.tl, "rgdpshr", r.tl, fd.tl, "", "", PUTYEAR, (100*xfd.l(r,fd,t)/rgdpmp.l(r,t)) / ;
             put sim.tl, "gdpshr", r.tl, fd.tl,  "", "", PUTYEAR, (100*yfd.l(r,fd,t)/gdpmp.l(r,t)) / ;
+         ) ;
+         loop(fdc,
+            putv1(evf,fdc,0,outScale)
          ) ;
 
          if(1,
@@ -203,7 +206,9 @@ if(ifSAM,
             putv1(ph2obnd,wbnd,0,1)
          ) ;
       ) ;
-      put sim.tl,"rorg","GBL","","","",PUTYEAR,(rorg.l(t)*rorg0) / ;
+      put sim.tl,"rorg", "GBL","","","", PUTYEAR,(rorg.l(t)*rorg0) / ;
+      put sim.tl,"sw",   "GBL","","","", PUTYEAR,(sw.l(t)*sw0*outscale) / ;
+      put sim.tl,"swt",  "GBL","","","", PUTYEAR,(swt.l(t)*swt0*outscale) / ;
 
       loop((r,em,is,aa)$emir(r,em,is,aa),
          putv3(emi, em, is, aa, 0, (1/cscale))

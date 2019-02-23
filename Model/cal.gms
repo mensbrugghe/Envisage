@@ -214,7 +214,7 @@ loop(t0,
 etah.fx(r,k,h,t) = incElas(k,r) ;
 
 yd0(r)        = 1 ;
-theta0(r,k,h) = 1 ;
+zcons0(r,k,h) = 1 ;
 xc0(r,k,h)    = 1 ;
 hshr0(r,k,h)  = 1 ;
 pc0(r,k,h)    = 1 ;
@@ -237,11 +237,11 @@ if(%utility% = ELES,
       mus.fx(r,h,t)   = 1 - sum(k, muc.l(r,k,h,t)) ;
    ) ;
 
-*  Initialize the theta parameters and supy
+*  Initialize the gamma parameters and supy
 
    loop(h,
-      theta.l(r,k,h,t) = 0.1*xc.l(r,k,h,t)/pop.l(r,t) ;
-      supy.l(r,h,t)  = yd.l(r,t)/pop.l(r,t) - sum(k, pc.l(r,k,h,t)*theta.l(r,k,h,t)) ;
+      gammac.l(r,k,h,t) = 0.1*xc.l(r,k,h,t)/pop.l(r,t) ;
+      supy.l(r,h,t)  = yd.l(r,t)/pop.l(r,t) - sum(k, pc.l(r,k,h,t)*gammac.l(r,k,h,t)) ;
    ) ;
 
    betac.fx(r,h,t) = 1 ;
@@ -269,7 +269,7 @@ if(%utility% = ELES,
    etah.lo(r,k,h,t) = -inf ; etah.up(r,k,h,t) = +inf ;
 
    loop(t0,
-      theta.l(r,k,h,t) = theta.l(r,k,h,t0) ;
+      gammac.l(r,k,h,t) = gammac.l(r,k,h,t0) ;
       supy.l(r,h,t)     = supy.l(r,h,t0) ;
    ) ;
 
@@ -287,7 +287,7 @@ if(%utility% = ELES,
 
    loop(t0,
       aad.fx(r,h,t) = exp(sum(k$xcFlag(r,k,h),
-                               muc.l(r,k,h,t0)*log(xc.l(r,k,h,t0)/pop.l(r,t0) - theta.l(r,k,h,t0)))
+                               muc.l(r,k,h,t0)*log(xc.l(r,k,h,t0)/pop.l(r,t0) - gammac.l(r,k,h,t0)))
                     +         (mus.l(r,h,t0)*log(savh.l(r,h,t0)/pop.l(r,t0)))$(savh.l(r,h,t0) > 0)
                     - u.l(r,h,t0) - 1) ;
    ) ;
@@ -295,8 +295,8 @@ if(%utility% = ELES,
    etah.l(r,k,h,t)$xcFlag(r,k,h) = muc.l(r,k,h,t)/((pc.l(r,k,h,t)*xc.l(r,k,h,t))/yd.l(r,t)) ;
 
    epsh.l(r,k,kp,h,t)$(xcFlag(r,k,h) and xcFlag(r,kp,h))
-      = -muc.l(r,k,h,t)*pc.l(r,kp,h,t)*pop.l(r,t)*theta.l(r,kp,h,t)/(pc.l(r,k,h,t)*xc.l(r,k,h,t))
-      -  kron(k,kp)*(1 - pop.l(r,t)*theta.l(r,k,h,t)/xc.l(r,k,h,t)) ;
+      = -muc.l(r,k,h,t)*pc.l(r,kp,h,t)*pop.l(r,t)*gammac.l(r,kp,h,t)/(pc.l(r,k,h,t)*xc.l(r,k,h,t))
+      -  kron(k,kp)*(1 - pop.l(r,t)*gammac.l(r,k,h,t)/xc.l(r,k,h,t)) ;
 
 elseif(%utility% = CD),
 
@@ -305,9 +305,9 @@ elseif(%utility% = CD),
    betac.fx(r,h,t)   = 1 ;
    muc.l(r,k,h,t)$xcFlag(r,k,h)   = pc.l(r,k,h,t)*xc.l(r,k,h,t)
                                   / (yd.l(r,t) - savh.l(r,h,t)) ;
-   theta.l(r,k,h,t) = 0 ;
+   gammac.l(r,k,h,t) = 0 ;
    supy.l(r,h,t) = (yd.l(r,t)-savh.l(r,h,t))/pop.l(r,t)
-                 -  sum(k, pc.l(r,k,h,t)*theta.l(r,k,h,t)) ;
+                 -  sum(k, pc.l(r,k,h,t)*gammac.l(r,k,h,t)) ;
 
    alphaad.fx(r,k,h,t) = muc.l(r,k,h,t) ;
    betaad.fx(r,k,h,t)  = muc.l(r,k,h,t) ;
@@ -316,7 +316,7 @@ elseif(%utility% = CD),
 
    loop(t0,
       aad.fx(r,h,t) = exp(sum(k$xcFlag(r,k,h),
-                              muc.l(r,k,h,t0)*log(xc.l(r,k,h,t0)/pop.l(r,t0) - theta.l(r,k,h,t0)))
+                              muc.l(r,k,h,t0)*log(xc.l(r,k,h,t0)/pop.l(r,t0) - gammac.l(r,k,h,t0)))
                     - u.l(r,h,t0) - 1) ;
    ) ;
 
@@ -343,11 +343,11 @@ elseif(%utility% = LES or %utility% = AIDADS),
    betac.fx(r,h,t)   = 1 ;
    muc.l(r,k,h,t)$xcFlag(r,k,h)   = etah.l(r,k,h,t)*pc.l(r,k,h,t)*xc.l(r,k,h,t)
                                   / (yd.l(r,t) - savh.l(r,h,t)) ;
-   theta.l(r,k,h,t)$xcFlag(r,k,h) = (yd.l(r,t) - savh.l(r,h,t))*(hshr.l(r,k,h,t)
-                                  + muc.l(r,k,h,t)/frisch(r,h,t))/pc.l(r,k,h,t) ;
-   theta.l(r,k,h,t) = theta.l(r,k,h,t) / pop.l(r,t) ;
+   gammac.l(r,k,h,t)$xcFlag(r,k,h) = (yd.l(r,t) - savh.l(r,h,t))*(hshr.l(r,k,h,t)
+                                   + muc.l(r,k,h,t)/frisch(r,h,t))/pc.l(r,k,h,t) ;
+   gammac.l(r,k,h,t) = gammac.l(r,k,h,t) / pop.l(r,t) ;
    supy.l(r,h,t) = (yd.l(r,t)-savh.l(r,h,t))/pop.l(r,t)
-                 -  sum(k, pc.l(r,k,h,t)*theta.l(r,k,h,t)) ;
+                 -  sum(k, pc.l(r,k,h,t)*gammac.l(r,k,h,t)) ;
 
    alphaad.fx(r,k,h,t) = muc.l(r,k,h,t) ;
    betaad.fx(r,k,h,t)  = muc.l(r,k,h,t) ;
@@ -356,14 +356,14 @@ elseif(%utility% = LES or %utility% = AIDADS),
 
    loop(t0,
       aad.fx(r,h,t) = exp(sum(k$xcFlag(r,k,h),
-                              muc.l(r,k,h,t0)*log(xc.l(r,k,h,t0)/pop.l(r,t0) - theta.l(r,k,h,t0)))
+                              muc.l(r,k,h,t0)*log(xc.l(r,k,h,t0)/pop.l(r,t0) - gammac.l(r,k,h,t0)))
                     - u.l(r,h,t0) - 1) ;
    ) ;
 
    loop(t$t0(t),
       omegaad.fx(r,h)
          = sum(k$xcFlag(r,k,h), (betaad.l(r,k,h,t)-alphaad.l(r,k,h,t))
-         *     log(xc.l(r,k,h,t)/pop.l(r,t) - theta.l(r,k,h,t)))
+         *     log(xc.l(r,k,h,t)/pop.l(r,t) - gammac.l(r,k,h,t)))
          - power(1+exp(u.l(r,h,t)),2)*exp(-u.l(r,h,t)) ;
    ) ;
    omegaad.fx(r,h) = 1/omegaad.l(r,h) ;
@@ -389,7 +389,7 @@ elseif (%utility% = CDE),
       * (u.l(r,h,t)**(-bh.l(r,k,h,t)*eh.l(r,k,h,t)))
       / sum(kp$xcFlag(r,kp,h), hshr.l(r,kp,h,t)/bh.l(r,kp,h,t)) ;
 
-   theta.l(r,k,h,t) = alphah.l(r,k,h,t)*bh.l(r,k,h,t)*(u.l(r,h,t)**(eh.l(r,k,h,t)*bh.l(r,k,h,t)))
+   zcons.l(r,k,h,t) = alphah.l(r,k,h,t)*bh.l(r,k,h,t)*(u.l(r,h,t)**(eh.l(r,k,h,t)*bh.l(r,k,h,t)))
                     *  (pc.l(r,k,h,t)/(yfd.l(r,h,t)/pop.l(r,t)))**bh.l(r,k,h,t) ;
 
    etah.l(r,k,h,t)$xcFlag(r,k,h) =
@@ -454,8 +454,9 @@ loop(t0,
 *  Other final demand
 
 sigmafd(r,fdc)$(sigmafd(r,fdc) eq 1) = 1.01 ;
-alphafd(r,i,fdc,t) = (xa.l(r,i,fdc,t)/xfd.l(r,fdc,t))
-                   * (pa.l(r,i,fdc,t)/pfd.l(r,fdc,t))**sigmafd(r,fdc) ;
+alphafd(r,i,fdc,t)$fdflag(r,fdc)
+   = (xa.l(r,i,fdc,t)/xfd.l(r,fdc,t))
+   * (pa.l(r,i,fdc,t)/pfd.l(r,fdc,t))**sigmafd(r,fdc) ;
 
 * --------------------------------------------------------------------------------------------------
 *
@@ -703,23 +704,6 @@ loop(t0,
 *
 * --------------------------------------------------------------------------------------------------
 
-loop(t0,
-   work = sum((r,j,rp)$(rmuv(r) and imuv(j)), pwe.l(r,j,rp,t0)*xw.l(r,j,rp,t0)) ;
-   phiw(r,i,rp,t)$(rmuv(r) and imuv(i)) = xw.l(r,i,rp,t0) / work ;
-   chimuv = pmuv.l(t0)/sum((r,i,rp)$(rmuv(r) and imuv(i)), phiw(r,i,rp,t0)*pwe.l(r,i,rp,t0)) ;
-
-   loop(r,
-      work = sum((i,fd), pa.l(r,i,fd,t0)*xa.l(r,i,fd,t0)) ;
-      phia(r,i,fd,t) = xa.l(r,i,fd,t0) / work ;
-      chi(r,fd) = pfd.l(r,fd,t0) / sum(i, phia(r,i,fd,t0)*pa.l(r,i,fd,t0)) ;
-   ) ;
-
-   loop(a,
-      work = sum(r, px.l(r,a,t0)*xp.l(r,a,t0)) ;
-      phipw(r,a,t)$work = xp.l(r,a,t0) / work ;
-   ) ;
-) ;
-
 * --------------------------------------------------------------------------------------------------
 *
 *  Normalize variables
@@ -849,6 +833,7 @@ loop(t0,
    norm1(yfd, fd, 0)
    norm1(pfd, fd, 0)
    norm1(ev, h, 0)
+   norm1(evf, fdc, 0)
    norm0(kstock, 0)
    norm0(deprY, 0)
    norm0(yqtf, 0)
@@ -865,11 +850,11 @@ loop(t0,
 *  Initialize zero government revenues in the base year to 1
    ygov0(r,gy)$(ygov0(r,gy) eq 0) = 1 ;
    ntmY0(r)$(ntmY0(r) eq 0) = 1 ;
-   norm2(theta, k, h, 0)
+   norm2(zcons, k, h, 0)
    norm2(muc, k, h, 0)
 $ifthen "%IFNORM%" == "1"
    if(%utility%=ELES or %utility%=LES or %utility%=AIDADS,
-      theta.fx(r,k,h,t) = 1 ;
+      gammac.fx(r,k,h,t) = gammac.l(r,k,h,t) ;
       muc.fx(r,k,h,t)   = 1 ;
 $endif
    ) ;
@@ -944,6 +929,9 @@ $endif
    norm0(rorc, 0)
    norm0(rore, 0)
    normg0(rorg, 0)
+
+   normg0(sw, 0)
+   normg0(swt, 0)
 
 *  !!!!! Exceptional
    kstocke.l(r,t) = kstocke.l(r,t) / kstock0(r) ;

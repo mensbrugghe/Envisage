@@ -392,6 +392,45 @@ yfd.l(r,fd,t) = sum(i, pa.l(r,i,fd,t)*xa.l(r,i,fd,t)) ;
 pfd.l(r,fd,t) = 1 ;
 xfd.l(r,fd,t) = yfd.l(r,fd,t) / pfd.l(r,fd,t) ;
 
+loop(t0,
+   fdFlag(r,fd)$xfd.l(r,fd,t0) = 1 ;
+) ;
+
+* --------------------------------------------------------------------------------------------------
+*
+*  Initialize the 'make/use' module
+*
+* --------------------------------------------------------------------------------------------------
+
+*  !!!! Need to insure that when running the model with perfect transformation and perfect
+*       substitution that the prices align (one way is to have fixed price adjusters)
+*  Set 'pp' to ps as it is more likely that demand has perfect substitutes than
+*  supply
+
+*  Calculate x tax-inclusive
+
+x.l(r,a,i,t)     = inscale*sum((a0,i0)$(mapa0(a0,a) and mapi0(i0,i)), makb(i0,a0,r)) ;
+lambdas(r,a,i,t) = 1 ;
+ptax.l(r,a,i,t)  = inscale*sum((a0,i0)$(mapa0(a0,a) and mapi0(i0,i)), maks(i0,a0,r)) ;
+ptax.l(r,a,i,t)$ptax.l(r,a,i,t) = x.l(r,a,i,t)/ptax.l(r,a,i,t) - 1 ;
+x.l(r,a,i,t)     = x.l(r,a,i,t) / ps.l(r,i,t) ;
+pp.l(r,a,i,t)    = ps.l(r,i,t) ;
+p.l(r,a,i,t)     = pp.l(r,a,i,t)/(1+ptax.l(r,a,i,t)) ;
+
+xs.l(r,i,t)  = sum(a, pp.l(r,a,i,t)*x.l(r,a,i,t))/ps.l(r,i,t) ;
+
+loop(t$(ord(t) eq 1),
+   xsFlag(r,i)$xs.l(r,i,t) = 1 ;
+) ;
+
+*  Re-base pxp, uc -- assume it is equal to p.l for fossil fuels
+
+loop((affl,e,t0),
+   pxp.l(r,affl,vOld,t)$x.l(r,affl,e,t0) = p.l(r,affl,e,t0) ;
+) ;
+*  !!!! Will require revision if GHG bundles are not zero in the base year
+uc.l(r,affl,vOld,t) = pxp.l(r,affl,vOld,t) ;
+
 * --------------------------------------------------------------------------------------------------
 *
 *  Initialize the production variables
@@ -542,6 +581,16 @@ loop(vOld,
 ) ;
 xp.l(r,a,t) = xp.l(r,a,t) / px.l(r,a,t) ;
 
+*  Re-base natural resource in fossil fuels
+
+display pf.l, xf.l ;
+
+loop(nrs,
+   pf.l(r,nrs,affl,t)$xp.l(r,affl,t) = pf.l(r,nrs,affl,t)*xf.l(r,nrs,affl,t) / xp.l(r,affl,t) ;
+   xf.l(r,nrs,affl,t)$xf.l(r,nrs,affl,t) = xp.l(r,affl,t) ;
+   pfp.l(r,nrs,affl,t) = pf.l(r,nrs,affl,t)*(1 + pftax.l(r,nrs,affl,t)) ;
+) ;
+
 * display uc.l, px.l, pp.l ;
 
 *  Initialize the technology parameters
@@ -555,6 +604,7 @@ chiglab.fx(r,l,t)        = 0 ;
 lambdaio.l(r,i,a,t)      = 1 ;
 lambdae.l(r,e,a,v,t)     = 1 ;
 lambdace.l(r,e,k,h,t)    = 1 ;
+lambdac(r,i,k,h,t)       = 1 ;
 lambdapb(r,elya,elyc,t)  = 1 ;
 lambdapow(r,pb,elyc,t)   = 1 ;
 
@@ -585,29 +635,6 @@ loop((t, vOld)$(ord(t) eq 1),
    xdFlag(r,i,aa)$xd.l(r,i,aa,t)      = 1 ;
    xmFlag(r,i,aa)$xm.l(r,i,aa,t)      = 1 ;
    xaNRGFlag(r,a,NRG)$xaNRG.l(r,a,NRG,vOld,t) = 1 ;
-) ;
-
-*  Initialize the 'make/use' module
-
-*  !!!! Need to insure that when running the model with perfect transformation and perfect
-*       substitution that the prices align (one way is to have fixed price adjusters)
-*  Set 'pp' to ps as it is more likely that demand has perfect substitutes than
-*  supply
-
-*  Calculate x tax-inclusive
-
-x.l(r,a,i,t)     = inscale*sum((a0,i0)$(mapa0(a0,a) and mapi0(i0,i)), makb(i0,a0,r)) ;
-lambdas(r,a,i,t) = 1 ;
-ptax.l(r,a,i,t)  = inscale*sum((a0,i0)$(mapa0(a0,a) and mapi0(i0,i)), maks(i0,a0,r)) ;
-ptax.l(r,a,i,t)$ptax.l(r,a,i,t) = x.l(r,a,i,t)/ptax.l(r,a,i,t) - 1 ;
-x.l(r,a,i,t)     = x.l(r,a,i,t) / ps.l(r,i,t) ;
-pp.l(r,a,i,t)    = ps.l(r,i,t) ;
-p.l(r,a,i,t)     = pp.l(r,a,i,t)/(1+ptax.l(r,a,i,t)) ;
-
-xs.l(r,i,t)  = sum(a, pp.l(r,a,i,t)*x.l(r,a,i,t))/ps.l(r,i,t) ;
-
-loop(t$(ord(t) eq 1),
-   xsFlag(r,i)$xs.l(r,i,t) = 1 ;
 ) ;
 
 * --------------------------------------------------------------------------------------------------
@@ -1480,15 +1507,8 @@ gdpmp.l(r,t) = sum(fd, yfd.l(r,fd,t))
 
 rgdpmp.l(r,t) = gdpmp.l(r,t) ;
 
-loop(gov,
-   rgovshr.l(r,t) = xfd.l(r,gov,t) / rgdpmp.l(r,t) ;
-   govshr.l(r,t)  = yfd.l(r,gov,t) / gdpmp.l(r,t) ;
-) ;
-
-loop(inv,
-   rinvshr.l(r,t) = xfd.l(r,inv,t) / rgdpmp.l(r,t) ;
-   invshr.l(r,t)  = yfd.l(r,inv,t) / gdpmp.l(r,t) ;
-) ;
+rfdshr.l(r,fd,t)$fdFlag(r,fd) = xfd.l(r,fd,t) / rgdpmp.l(r,t) ;
+nfdshr.l(r,fd,t)$fdFlag(r,fd) = yfd.l(r,fd,t) / gdpmp.l(r,t) ;
 
 loop(t0,
 *  Initialization for comparative static model
@@ -1509,4 +1529,22 @@ pw.l(a,t) = sum((r,t0), px.l(r,a,t)*xp.l(r,a,t0))
 pwtrend(a,tt) = na ;
 pwshock(a,tt) = na ;
 
-walras.l = 0.0 ;
+*  Welfare measures
+
+evf.l(r,fdc,t) = sum(t0, pfd.l(r,fdc,t0))*(yfd.l(r,fdc,t)/pfd.l(r,fdc,t)) ;
+
+*  Parameters need to be defined in the parameter file
+
+sw.l(t)       = (sum((r,h), welfwgt(r,t)*pop.l(r,t)
+              *   (ev.l(r,h,t)/(pop.l(r,t)))**(1-epsw(t)))/(1-epsw(t)))
+              /  sum(r,pop.l(r,t)) ;
+
+swt.l(t)      = (sum((r,h), welftwgt(r,t)*pop.l(r,t)
+              *   ((ev.l(r,h,t) + sum(gov, evf.l(r,gov,t)))/(pop.l(r,t)))**(1-epsw(t)))/(1-epsw(t)))
+              /  sum(r,pop.l(r,t)) ;
+
+display sw.l, ev.l ;
+
+loop(t0,
+   obj.l = sw.l(t0) ;
+) ;

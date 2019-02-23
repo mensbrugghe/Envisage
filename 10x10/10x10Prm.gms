@@ -154,6 +154,8 @@ omegaw0(r,i) = inf ;
 *omegax0(r,i) = 2 ;
 *omegaw0(r,i) = 4 ;
 
+invElas0(r,a)$(invElas0(r,a) eq 0) = 0.1 ;
+
 etaODA0(r,t) = 0 ;
 
 Parameters
@@ -322,6 +324,10 @@ parameters
    omegam(r,l)             "Elasticity of migration"
 
    etaODA(r,t)             "Elasticity of ODA wrt to per capita income"
+
+   epsw(t)                 "Social welfare elasticity"
+   welfWgt(r,t)            "Welfare weights for sw"
+   welftWgt(r,t)           "Welfare weights for swt"
 ;
 
 *  User set parameters
@@ -596,3 +602,110 @@ rtwtgt(rp,r) = no ;
 *tw2("EastAsia",i,t)$(years(t) ge 2012)  = 0.02 ;
 *rtwtgt("Oceania", "EastAsia") = yes ;
 *rtwtgt("RestofWorld", "EastAsia") = yes ;
+
+*  Social welfare elasticity
+
+epsw(t)       = 0 ;
+welfWgt(r,t)  = 1 ;
+welftWgt(r,t) = 1 ;
+
+* --------------------------------------------------------------------------------------------------
+*
+*  Knowledge module assumptions
+*
+*
+*  delta:      Delta parameter in gamma function
+*  lambda:     Lambda parameter in gamma function
+*  N:          Number of years in gamma function
+*  g0:         Initial steady-state growth parameter
+*  depr:       Knowledge depreciation rate
+*  rd0:        Initial steady state level of research expenditure wrt to GDP
+*  gammar:     Sectoral productivity shifter
+*  epsr:       Sectoral productivity elasticity
+*
+* --------------------------------------------------------------------------------------------------
+
+scalar ifR_D / 1 / ;
+table KnowledgeData0(r,*)
+               delta    lambda         N        g0      depr       rd0    gammar      epsr
+Oceania         0.70      0.80        35       2.0       1.0       2.0       1.0       0.3
+EU_28           0.60      0.85        25       1.5       1.0       2.0       1.0       0.3
+NAmerica        0.70      0.90        50       2.0       1.0       2.0       1.0       0.3
+EastAsia        0.50      0.80        15       5.0       1.0       2.0       1.0       0.3
+SEAsia          0.50      0.80        15       4.0       1.0       2.0       1.0       0.3
+SouthAsia       0.50      0.80        15       4.0       1.0       2.0       1.0       0.3
+MENA            0.50      0.80        15       3.0       1.0       2.0       1.0       0.3
+SSA             0.50      0.80        15       3.0       1.0       2.0       1.0       0.3
+LatinAmer       0.70      0.90        25       2.5       1.0       2.0       1.0       0.3
+RestofWorld     0.40      0.80        15       2.5       1.0       2.0       1.0       0.3
+;
+
+$ontext
+* --------------------------------------------------------------------------------------------------
+*
+*  Depletion module assumptions
+*
+* --------------------------------------------------------------------------------------------------
+
+set nrgScen / EIA2015 / ;
+
+*  Could make this region specific
+
+table ptrend00(nrgScen,a,pt)
+
+                     lo       ref        hi
+
+EIA2015.coa-a       1.0       1.0       1.0
+EIA2015.oil-a   0.98562   1.00714   1.02744
+EIA2015.gas-a   0.98562   1.00714   1.02744
+;
+
+parameter ptrend0(nrgScen,r,a,pt) ;
+ptrend0(nrgScen,r,a,pt) = ptrend00(nrgScen,a,pt) ;
+
+*  Could make this region specific
+
+table omegard00(a,pt)   "Elasticity of discovery wrt to price"
+             lo        hi
+oil-a       2.0       1.0
+gas-a       2.0       1.0
+coa-a       2.0       1.0
+;
+
+parameter omegard0(r,a,pt) ;
+omegard0(r,a,pt) = omegard00(r,a,pt) ;
+
+*  Could make this region specific
+
+Parameter omegae00(a)   "Elasticity of extraction wrt to price" /
+oil-a       1.3
+gas-a       1.3
+coa-a       1.3
+/ ;
+
+parameter omegard0(r,a,pt) ;
+omegard0(r,a,pt) = omegard00(r,a,pt) ;
+
+*  Could make this region specific
+
+table dscRate00(a,pt) "Initial discovery rate assumptions in percent"
+
+             lo       ref        hi
+oil-a       3.5       5.0       6.5
+gas-a       1.0       2.0       4.0
+;
+
+parameter dscRate0(r,a,pt) ;
+dscRate0(r,a,pt) = dscRate00(r,a,pt) ;
+
+table extRate00(a,pt) "Initial extraction rate assumptions in percent"
+
+             lo       ref        hi
+oil-a       3.5       5.0       6.5
+gas-a       1.0       2.0       4.0
+coa-a      0.01       1.0       3.5
+;
+
+parameter extRate0(r,a,pt) ;
+extRate0(r,a,pt) = extRate00(r,a,pt) ;
+$offtext

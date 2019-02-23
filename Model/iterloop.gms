@@ -29,8 +29,9 @@ loop(t0$(ifDyn and years(tsim) gt years(t0) and years(tsim) gt %1),
    if(ifVint and ord(tsim) eq 2,
    $$include "InitVint.gms"
    ) ;
-
 ) ;
+
+obj.l = sw.l(tsim) ;
 
 *  Re-calibrate the production parameters starting with the
 *  second simulation year
@@ -254,24 +255,24 @@ $iftheni.costCurve "%simType%" == "RcvDyn"
 *
 * --------------------------------------------------------------------------------------------------
 
-if(years(tsim) gt FirstYear,
+if(years(tsim) gt baseYear,
 
    loop((r,a)$ifCostCurve(r,a),
 
       $$iftheni.type %costCurve% == HYPERB
 
          work = log((costTgt(r,a) - costMin(r,a))/(1 - costMin(r,a)))
-              / log(1/(costTgtYear(r,a) - (FirstYear-1))) ;
-         work = ((costMin(r,a) + (1-costMin(r,a))*(years(tsim-1)-(FirstYear-1))**(-work))
-              / (costMin(r,a) + (1-costMin(r,a))*(years(tsim)-(FirstYear-1))**(-work))) ;
+              / log(1/(costTgtYear(r,a) - (baseYear-1))) ;
+         work = ((costMin(r,a) + (1-costMin(r,a))*(years(tsim-1)-(baseYear-1))**(-work))
+              / (costMin(r,a) + (1-costMin(r,a))*(years(tsim)-(baseYear-1))**(-work))) ;
 
       $$elseifi.type %costCurve% == LOGIST
 
-         work = -(1/(costTgtYear(r,a)-FirstYear))*log((costTgt(r,a)-costMin(r,a))
+         work = -(1/(costTgtYear(r,a)-baseYear))*log((costTgt(r,a)-costMin(r,a))
               /  (costTgt(r,a)*(1 - costMin(r,a))))) ;
 
-         work = (1 + (costMin(r,a)-1)*exp(-work*(years(tsim)-FirstYear)))
-              / (1 + (costMin(r,a)-1)*exp(-work*(years(tsim)-FirstYear - gap(tsim))))) ;
+         work = (1 + (costMin(r,a)-1)*exp(-work*(years(tsim)-baseYear)))
+              / (1 + (costMin(r,a)-1)*exp(-work*(years(tsim)-baseYear - gap(tsim))))) ;
 
       $$else.type
 
