@@ -150,6 +150,11 @@ if(ifSAM,
                put sim.tl, "gammaesd", r.tl, e.tl, "","", PUTYEAR, (gammaesd(r,e)) / ;
                put sim.tl, "gammaese", r.tl, e.tl, "","", PUTYEAR, (gammaese(r,e)) / ;
             ) ;
+            loop(fuel,
+               loop(aa,
+                  put sim.tl, "nrgComb", r.tl, fuel.tl, aa.tl,"", PUTYEAR, (phiNrg(r,fuel,aa)*XA0(r,fuel,aa)*xa.l(r,fuel,aa,t)*outScale) / ;
+               ) ;
+            ) ;
 
          ) ;
 

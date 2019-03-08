@@ -40,6 +40,8 @@ set aggaga(aga) "Activities to report" ;
 
 aggaga(aga) = yes ;
 
+scalar elyPrmNrgConv "Primary electric conversion factor" / 3 / ;
+
 *  Pivot tables to create
 
 *  List of tables
@@ -56,11 +58,12 @@ set tables /
    emi         "Emissions"
    cost        "Production costs"
    ydecomp     "Growth decomposition"
-   trade       "Terms of trade"
-   bilat       "Trade by sector"
-   lab         "Bilateral trade"
-   pow         "Labor demand"
-   tot         "Power sector variables"
+   trade       "Trade by sector"
+   bilat       "Bilateral trade"
+   lab         "Labor demand"
+   pow         "Power module"
+   tot         "Terms of trade module"
+   nrg         "Energy module"
    depl        "Depletion variables"
    shock       "For future use"
 / ;
@@ -70,20 +73,21 @@ set tables /
 set ifTab(tables) /
    gdppop      "Macro data"
    factp       "Factor prices"
-   kappah      "Household direct tax rate"
-   rgovshr     "Government expenditures"
+*  kappah      "Household direct tax rate"
+*  rgovshr     "Government expenditures"
    savinv      "Savings investment balance"
    xp          "Output by activity"
    va          "Value added by activity and factor"
    inv         "Investment"
-   emi         "Emissions"
+*  emi         "Emissions"
    cost        "Production costs"
    ydecomp     "Growth decomposition"
    tot         "Terms of trade"
    trade       "Trade by sector"
    bilat       "Bilateral trade"
-   lab         "Labor demand"
+*  lab         "Labor demand"
 *  pow         "Power sector variables"
+*  nrg         "Energy module"
 *  depl        "Depletion variables"
 *  shock       "For future use"
 / ;

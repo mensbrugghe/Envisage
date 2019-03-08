@@ -90,6 +90,9 @@ mlag2(pa, i, aa)
 mlag2(xa, i, aa)
 
 mlag1(emiTax, em)
+mlag0(psave)
+mlag1(savh,h)
+mlag0(savg)
 
 *  Fix global lag variables (no macros)
 

@@ -16,7 +16,7 @@ $elseifi.getEnv "%sysenv.COMPUTERNAME%" == "1145KRAN563-02D"
 *  $$setGlobal DSN MS Access Text Driver;DefaultDir=C:\;DriverId=27;FIL=text;MaxBufferSize=2048;PageTimeout=5;
    $$setGlobal DSN Text files;DefaultDir=C:\;DriverId=27;FIL=text;MaxBufferSize=2048;PageTimeout=5;
 $else.getEnv
-   $$setGlobal DSN MS Access Text Driver;DefaultDir=C:\;DriverId=27;FIL=text;MaxBufferSize=2048;PageTimeout=5;
+   $$setGlobal DSN Text files;DefaultDir=C:\;DriverId=27;FIL=text;MaxBufferSize=2048;PageTimeout=5;
 $endif.getEnv
 
 $show
@@ -88,6 +88,31 @@ Value      4      1
 ;
 $setGlobal ifActivity 1
 $setGlobal ifSortAct  1
+
+$elseifi "%GEOM%" == "VarByNRG"
+
+set fields /
+   Sim
+   Var
+   Region
+   Source
+   Unit
+   Year
+   Value
+/ ;
+
+Table PivotOptions(fields, *)
+         Pos    ifSum
+Sim        3      0
+Var        3      0
+Region     3      0
+Unit       3      0
+Source     2      0
+Year       1      0
+Value      4      1
+;
+$setGlobal ifActivity 0
+$setGlobal ifSortAct  0
 
 $elseifi "%GEOM%" == "VarByReserve"
 

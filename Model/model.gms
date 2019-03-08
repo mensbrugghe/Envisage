@@ -27,6 +27,9 @@ $macro mlag0(var)             var.fx(r,tsim-1) = var.l(r,tsim-1) ;
 $macro mlag1(var,i__1)        var.fx(r,i__1,tsim-1) = var.l(r,i__1,tsim-1) ;
 $macro mlag2(var,i__1, i__2)  var.fx(r,i__1,i__2,tsim-1) = var.l(r,i__1,i__2,tsim-1) ;
 
+$macro m_phiInv(r,tlag) (pfd0(r,inv)*pfd(r,inv,tlag)*(xfd0(r,inv)*xfd(r,inv,tlag) - depr(r,tlag)*kstock0(r)*kstock(r,tlag))/sum(s, pfd0(s,inv)*pfd(s,inv,tlag)*(xfd0(s,inv)*xfd(s,inv,tlag) - depr(s,tlag)*kstock0(s)*kstock(s,tlag))))
+$macro m_phiSav(r,tlag) ((savh0(r,h)*savh(r,h,tlag) + savg(r,tlag))/sum(s, savh0(s,h)*savh(s,h,tlag) + savg(s,tlag)))
+
 $ontext
 
 *  DEFINE POSSIBLE FUNCTIONAL FORMS FOR LAND AND WATER MARKETS
@@ -164,6 +167,7 @@ Parameters
    nu(r,k,h)               "Energy/non-energy substitution elasticity in consumption"
 
    ac(r,i,k,h)             "Share parameters in decomposition of non-energy and energy bundles"
+   lambdac(r,i,k,h,t)      "Commodity efficiency shifter in consumption"
    nunnrg(r,k,h)           "Substitution across goods in non-energy bundle"
 
    acnely(r,k,h,t)         "Non-electric bundle share parameter in consumption"
@@ -287,6 +291,7 @@ Parameters
 
 *  Social welfare function weights
 
+   epsw(t)                 "Social welfare elasticity"
    welfwgt(r,t)            "Weights for private consumption"
    welftwgt(r,t)           "Weights for private+public consumption"
 
@@ -365,7 +370,6 @@ Parameters
    fdFlag(r,fd)            "Flag for FD expenditures"
 
    hWasteFlag(r,i,h)       "Flag for waste function in household consumption"
-   lambdac(r,i,k,h,t)      "Commodity efficiency shifter in consumption"
 
    xatFlag(r,i)            "Flag for aggregate Armington demand"
    xddFlag(r,i)            "Flag for XDD bundle"
@@ -616,7 +620,6 @@ Parameters
 *
 *  rsg0(r)             "Real government savings"
 *
-*
 *  rfdshr0(r,fd)       "Volume share of final demand in real GDP"
 *  nfdshr0(r,fd)       "Value share of final demand in nominal GDP"
 *
@@ -677,8 +680,10 @@ Parameters
 
    ev0(r,h)             "Initial EV"
    evf0(r,fd)           "Initial EV for final demand"
+   evs0(r)              "Initial EV for savings"
    sw0                  "Initial level for social welfare"
    swt0                 "Initial level for total social welfare"
+   swt20                "Initial level for second total social welfare"
 
 *
 *  Currently non explained variables
@@ -1056,10 +1061,14 @@ variables
    wtaxhx(r,i,h,t)         "Excise tax on waste"
 
 *  Post-simulation variables
+   chisave(t)              "Price of saving adjustment factor"
+   psave(r,t)              "Price of savings"
    ev(r,h,t)               "Equivalent income at base year prices"
    evf(r,fd,t)             "Final demand expenditure function"
+   evs(r,t)                "Equivalent variation of savings"
    sw(t)                   "Social welfare function--private consumption"
    swt(t)                  "Social welfare function--private and public consumption"
+   swt2(t)                 "Social welfare function--private and public consumption+savings"
 
    obj                     "Objective function"
 ;
@@ -1333,12 +1342,16 @@ equations
    tkapseq(r,t)            "Capital normalization formula"
    lambdafeq(r,l,a,t)      "Labor productivity factor"
 
+   chisaveeq(t)            "Price of saving adjustment factor"
+   psaveeq(r,t)            "Price of savings"
    eveq(r,h,t)             "Equivalent income at base year prices"
    evfeq(r,fdc,t)          "Expenditure function for other final demand"
+   evseq(r,t)              "Equivalent variation for savings"
    sweq(t)                 "Social welfare function--private consumption"
    swteq(t)                "Social welfare function--private + public consumption"
+   swt2eq(t)               "Social welfare function--private + public consumption + savings"
 
-   objeq                   Objective function
+   objeq                   "Objective function"
 ;
 
 * --------------------------------------------------------------------------------------------------
@@ -2792,14 +2805,7 @@ kshiinfeq(r,a,t)$(ts(t) and ifVint and invElas(r,a) eq inf and kfFlag(r,a))..
 rrateq(r,a,t)$(ts(t) and ifVint and kfFlag(r,a))..
    kslo(r,a,t) + kshi(r,a,t) =l= sum(v, kv(r,a,v,t)) ;
 
-$ontext
-rrateq(r,a,t)$(ts(t) and rs(r) and ifVint and kflag(r,a))..
-   rrat(r,a,t)**invElas(r,a) =l= sum(vOld, kxrat(r,a,vOld,t))*xp(r,a,t)
-                                        *  (kxRat0(r,a)*xp0(r,a)/(k00(r,a)*k0(r,a,t))) ;
-$offtext
-
 rrat.up(r,a,t) = 1 ;
-
 
 kxRateq(r,a,vOld,t)$(ts(t) and rs(r) and ifVint and kFlag(r,a))..
    kxRat(r,a,vOld,t) =e= (kv(r,a,vOld,t)/xpv(r,a,vOld,t))
@@ -2818,23 +2824,6 @@ xpveq(r,a,v,t)$(ts(t) and rs(r) and xpFlag(r,a))..
 
       +  (xp(r,a,t) - sum(vp, xpv(r,a,vp,t)*(xpv0(r,a)/xp0(r,a))))
       $vNew(v) ;
-
-*  Vintage output allocation
-
-$ontext
-xpveq(r,a,v,t)$(ts(t) and rs(r) and xpFlag(r,a))..
-
-*     The first condition is only used for the vintage model
-
-   0 =e= (xpv(r,a,v,t)*kxrat(r,a,v,t)
-      -     (rrat(r,a,t)**invElas(r,a))*(k0(r,a,t)*k00(r,a)/(xpv0(r,a)*kxRat0(r,a))))
-      $(vOld(v) and ifVint)
-
-*     The following condition is good for CS and Vintage
-
-      +  (xp(r,a,t) - sum(vp, xpv(r,a,vp,t)*(xpv0(r,a)/xp0(r,a))))
-      $vNew(v) ;
-$offtext
 
 xpv.lo(r,a,vOld,t) = 0.001 ;
 
@@ -3477,6 +3466,30 @@ lambdafeq(r,l,a,t)$(ts(t) and rs(r) and xfFlag(r,l,a))..
       * power(1 + chiglab(r,l,t) + glAddShft(r,l,a,t) + glMltShft(r,l,a,t)*gl(r,t),
          gap(t)) ;
 
+* --------------------------------------------------------------------------------------------------
+*
+*  Welfare module
+*
+* --------------------------------------------------------------------------------------------------
+
+*  Price of savings
+
+chisaveeq(t)$ts(t)..
+$iftheni "%simType%" == "compStat"
+   chisave(t) =e= sum((r,inv,t0), m_phiInv(r,t0)*pfd(r,inv,t)/pfd(r,inv,t0))
+               / sum((r,h,t0),   m_phiSav(r,t0)*psave(r,t)/psave(r,t0)) ;
+$else
+   chisave(t) =e= sum((r,inv), m_phiInv(r,t-1)*pfd(r,inv,t)/pfd(r,inv,t-1))
+               / sum((r,h),    m_phiSav(r,t-1)*psave(r,t)/psave(r,t-1)) ;
+$endif
+
+psaveeq(r,t)$(ts(t) and rs(r))..
+$iftheni "%simType%" == "compStat"
+   psave(r,t) =e= chisave(t)*sum((inv,t0), pfd(r,inv,t)*psave(r,t0)/pfd(r,inv,t0)) ;
+$else
+   psave(r,t) =e= chisave(t)*sum(inv, pfd(r,inv,t)*psave(r,t-1)/pfd(r,inv,t-1)) ;
+$endif
+
 *  Equivalent variation at base year prices
 *  !!!! Check formulas for non-CDE
 
@@ -3502,16 +3515,25 @@ eveq(r,h,t)$(1 and ts(t) and rs(r))..
 evfeq(r,fdc,t)$(ts(t) and rs(r) and fdFlag(r,fdc))..
    evf(r,fdc,t) =e= (yfd0(r,fdc)/evf0(r,fdc))*sum(t0, pfd(r,fdc,t0))*(yfd(r,fdc,t)/pfd(r,fdc,t)) ;
 
+evseq(r,t)$(ts(t) and rs(r))..
+   evs(r,t)*evs0(r) =e= sum((h,t0), psave(r,t0)*(savh0(r,h)*savh(r,h,t) + savg(r,t))/psave(r,t)) ;
+
 sweq(t)$(ts(t))..
-   sw(t)*sw0 =e= (sum((r,h), welfwgt(r,t)*pop0(r)*pop(r,t)
-              *   (ev0(r,h)*ev(r,h,t)/(pop0(r)*pop(r,t)))**(1-epsw(t)))/(1-epsw(t)))
+   sw(t)*sw0 =e= (sum((r), welfwgt(r,t)*pop0(r)*pop(r,t)
+              *   (sum(h, ev0(r,h)*ev(r,h,t))/(pop0(r)*pop(r,t)))**(1-epsw(t)))/(1-epsw(t)))
               /  sum(r,pop0(r)*pop(r,t)) ;
 
 swteq(t)$(ts(t))..
-   swt(t)*swt0 =e= (sum((r,h), welftwgt(r,t)*pop0(r)*pop(r,t)
-                *   ((ev0(r,h)*ev(r,h,t) + sum(gov, evf0(r,gov)*evf(r,gov,t)))
+   swt(t)*swt0 =e= (sum((r), welftwgt(r,t)*pop0(r)*pop(r,t)
+                *   ((sum(h, ev0(r,h)*ev(r,h,t)) + sum(gov, evf0(r,gov)*evf(r,gov,t)))
                 /    (pop0(r)*pop(r,t)))**(1-epsw(t)))/(1-epsw(t)))
                 /  sum(r,pop0(r)*pop(r,t)) ;
+
+swt2eq(t)$(ts(t))..
+   swt2(t)*swt20 =e= (sum((r), welftwgt(r,t)*pop0(r)*pop(r,t)
+                  *   ((sum(h, ev0(r,h)*ev(r,h,t)) + sum(gov, evf0(r,gov)*evf(r,gov,t)) + evs(r,t)*evs0(r))
+                  /    (pop0(r)*pop(r,t)))**(1-epsw(t)))/(1-epsw(t)))
+                  /  sum(r,pop0(r)*pop(r,t)) ;
 
 objeq..
    obj =e= sum(t$ts(t), sw(t)) ;
@@ -3610,7 +3632,8 @@ model core /
    emiieq.emi, emifeq.emi, emixeq.emi, emiToteq.emiTot, emiGbleq.emiGbl,
    emiCapeq.emiRegTax, emiTaxeq.emiTax, emiQuotaYeq.emiQuotaY,
 
-   eveq.ev, evfeq.evf, sweq.sw, swteq.swt,
+   chisaveeq.chisave, psaveeq.psave, eveq.ev, evfeq.evf, evseq.evs,
+   sweq.sw, swteq.swt, swt2eq.swt2,
 
    walraseq, objeq
 / ;

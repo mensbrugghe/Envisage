@@ -94,7 +94,7 @@ remit.up(r,l,rp,tsim)$remit0(r,l,rp) = +inf ;
 if(ifMCP,
    solve %1 using mcp ;
 else
-   solve %1 using nlp minimizing obj ;
+   solve %1 using nlp maximizing obj ;
 ) ;
 
 put screen ;

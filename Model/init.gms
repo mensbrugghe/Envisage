@@ -1519,7 +1519,6 @@ rgdppc.l(r,t)   = rgdpmp.l(r,t) / pop.l(r,t) ;
 grrgdppc.l(r,t) = 0 ;
 gl.l(r,t)       = 0 ;
 
-
 klrat.l(r,t) = sum((a,v), pk.l(r,a,v,t)*kv.l(r,a,v,t))
              / sum((a,l), pf.l(r,l,a,t)*xf.l(r,l,a,t)) ;
 
@@ -1529,9 +1528,14 @@ pw.l(a,t) = sum((r,t0), px.l(r,a,t)*xp.l(r,a,t0))
 pwtrend(a,tt) = na ;
 pwshock(a,tt) = na ;
 
+walras.l(t)   = 0 ;
+
 *  Welfare measures
 
+chisave.l(t)   = 1 ;
+psave.l(r,t)   = 1 ;
 evf.l(r,fdc,t) = sum(t0, pfd.l(r,fdc,t0))*(yfd.l(r,fdc,t)/pfd.l(r,fdc,t)) ;
+evs.l(r,t)     = sum((h,t0), psave.l(r,t0)*(savh.l(r,h,t) + savg.l(r,t)))/psave.l(r,t) ;
 
 *  Parameters need to be defined in the parameter file
 
@@ -1543,7 +1547,11 @@ swt.l(t)      = (sum((r,h), welftwgt(r,t)*pop.l(r,t)
               *   ((ev.l(r,h,t) + sum(gov, evf.l(r,gov,t)))/(pop.l(r,t)))**(1-epsw(t)))/(1-epsw(t)))
               /  sum(r,pop.l(r,t)) ;
 
-display sw.l, ev.l ;
+swt2.l(t)     = (sum((r,h), welftwgt(r,t)*pop.l(r,t)
+              *   ((ev.l(r,h,t) + sum(gov, evf.l(r,gov,t)) + evs.l(r,t))/(pop.l(r,t)))**(1-epsw(t)))/(1-epsw(t)))
+              /  sum(r,pop.l(r,t)) ;
+
+display sw.l, ev.l, swt.l, swt2.l ;
 
 loop(t0,
    obj.l = sw.l(t0) ;

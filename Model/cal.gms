@@ -697,7 +697,6 @@ loop(t0,
    ) ;
 ) ;
 
-
 * --------------------------------------------------------------------------------------------------
 *
 *  Miscellaneous calibration
@@ -832,8 +831,6 @@ loop(t0,
    norm1(xfd, fd, 0)
    norm1(yfd, fd, 0)
    norm1(pfd, fd, 0)
-   norm1(ev, h, 0)
-   norm1(evf, fdc, 0)
    norm0(kstock, 0)
    norm0(deprY, 0)
    norm0(yqtf, 0)
@@ -930,8 +927,12 @@ $endif
    norm0(rore, 0)
    normg0(rorg, 0)
 
+   norm1(ev, h, 0)
+   norm1(evf, fdc, 0)
+   norm0(evs, 0)
    normg0(sw, 0)
    normg0(swt, 0)
+   normg0(swt2, 0)
 
 *  !!!!! Exceptional
    kstocke.l(r,t) = kstocke.l(r,t) / kstock0(r) ;

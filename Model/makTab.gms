@@ -96,6 +96,8 @@ if(ifTab("gdpPop"),
       put "EVG", "%SIMNAME%", ra.tl, PUTYEAR, (vol) / ;
       vol = outScale*sum((inv,r)$mapr(ra,r), yfd.l(r,inv,t)*yfd0(r,inv)*pfd.l(r,inv,t0)/pfd.l(r,inv,t)) ;
       put "EVI", "%SIMNAME%", ra.tl, PUTYEAR, (vol) / ;
+      vol = outScale*sum((r,h)$mapr(ra,r), ((savh.l(r,h,t)*savh0(r,h) + savg.l(r,t))/psave.l(r,t))*psave.l(r,t0)) ;
+      put "EVS", "%SIMNAME%", ra.tl, PUTYEAR, (vol) / ;
       vol = outscale*(sum(r$mapr(ra,r), sum(h, ev.l(r,h,t)*ev0(r,h)))
           +           sum((gov,r)$mapr(ra,r), yfd.l(r,gov,t)*yfd0(r,gov)*pfd.l(r,gov,t0)/pfd.l(r,gov,t))
           +           sum((inv,r)$mapr(ra,r), yfd.l(r,inv,t)*yfd0(r,inv)*pfd.l(r,inv,t0)/pfd.l(r,inv,t))) ;
@@ -1076,6 +1078,48 @@ if(ifTab("pow"),
    ) ;
 
    putclose powcsv ;
+) ;
+
+
+file nrgcsv / %odir%\nrg.csv / ;
+
+if(ifTab("nrg"),
+   put nrgcsv ;
+   if(%ifAppend%,
+      nrgcsv.ap = 1 ;
+      put nrgcsv ;
+   else
+      nrgcsv.ap = 0 ;
+      put nrgcsv ;
+      put "Var,Sim,Region,Source,Unit,Year,Value" / ;
+   ) ;
+   nrgcsv.pc = 5 ;
+   nrgcsv.nd = 9 ;
+
+   execute_load "%odir%/%SIMNAME%.gdx", xp, px, xp0, px0, xa, xa0, phiNrg ;
+
+*  Fuels
+
+   loop((ra,fuel,t,t0),
+      vol = sum((r,aa)$mapr(ra,r), phinrg(r,fuel,aa)*xa0(r,fuel,aa)*xa.l(r,fuel,aa,t)) ;
+      if(vol,
+         put "NRG", "%SIMNAME%", ra.tl, fuel.tl, "MTOE", PUTYEAR, (vol/escale) / ;
+         put "NRG", "%SIMNAME%", ra.tl, fuel.tl, "EJ",   PUTYEAR, (emat("MTOE", "EJ")*vol/escale) / ;
+      ) ;
+   ) ;
+
+*  Electricity
+
+   loop((ra,a,t,t0)$primElya(a),
+      vol = sum(r$mapr(ra,r), xp0(r,a)*xp.l(r,a,t)) ;
+      if(vol,
+         put "NRG", "%SIMNAME%", ra.tl, a.tl, "GWhr", PUTYEAR, (elyPrmNrgConv*vol/inscale) / ;
+         put "NRG", "%SIMNAME%", ra.tl, a.tl, "MTOE", PUTYEAR, (elyPrmNrgConv*emat("gWh", "MTOE")*vol/inscale) / ;
+         put "NRG", "%SIMNAME%", ra.tl, a.tl, "EJ",   PUTYEAR, (elyPrmNrgConv*emat("gWh", "EJ")*vol/inscale) / ;
+      ) ;
+   ) ;
+
+   putclose nrgcsv ;
 ) ;
 
 $iftheni %DEPLFlag% == 1

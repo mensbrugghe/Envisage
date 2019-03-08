@@ -76,6 +76,10 @@ if(not %ifAppend%,
          $$batinclude "setupPivot" Output VarByActivity xp
       ) ;
 
+      if(sameas(tables,"NRG"),
+         $$batinclude "setupPivot" NRG VarByNRG NRG
+      ) ;
+
       if(sameas(tables,"bilat"),
          $$batinclude "setupPivot" Bilat VarByBilat xwS
       ) ;
