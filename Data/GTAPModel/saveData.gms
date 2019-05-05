@@ -49,66 +49,78 @@ loop(t$sameas(t,"%1"),
 
 *  Production matrices
 
-   VDFBF(i0,a0,r) = rescale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)), pd.l(r,i,t)*xd.l(r,i,a,t)/xScale(r,a)) ;
-   VDFPF(i0,a0,r) = rescale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)), pdp.l(r,i,a,t)*xd.l(r,i,a,t)/xScale(r,a)) ;
-   VMFBF(i0,a0,r) = rescale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)), pmt.l(r,i,t)*xm.l(r,i,a,t)/xScale(r,a)) ;
-   VMFPF(i0,a0,r) = rescale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)), pmp.l(r,i,a,t)*xm.l(r,i,a,t)/xScale(r,a)) ;
-   EVFBF(fp,a0,r) = rescale*sum(a$mapa0(a0,a), pf.l(r,fp,a,t)*xf.l(r,fp,a,t)/xScale(r,a)) ;
-   EVFPF(fp,a0,r) = rescale*sum(a$mapa0(a0,a), pfa.l(r,fp,a,t)*xf.l(r,fp,a,t)/xScale(r,a)) ;
+   VDFBF(i0,a0,r) = rescale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)),
+                        pd0(r,i)*xd0(r,i,a)*pd.l(r,i,t)*xd.l(r,i,a,t)) ;
+   VDFPF(i0,a0,r) = rescale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)),
+                        pdp0(r,i,a)*xd0(r,i,a)*pdp.l(r,i,a,t)*xd.l(r,i,a,t)) ;
+   VMFBF(i0,a0,r) = rescale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)),
+                        ((pmt0(r,i)*pmt.l(r,i,t))$(not MRIO) + (pma0(r,i,a)*pma.l(r,i,a,t))$MRIO)*xm0(r,i,a)*xm.l(r,i,a,t)) ;
+   VMFPF(i0,a0,r) = rescale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)),
+                        pmp0(r,i,a)*xm0(r,i,a)*pmp.l(r,i,a,t)*xm.l(r,i,a,t)) ;
+   EVFBF(fp,a0,r) = rescale*sum(a$mapa0(a0,a), pf0(r,fp,a)*xf0(r,fp,a)*pf.l(r,fp,a,t)*xf.l(r,fp,a,t)) ;
+   EVFPF(fp,a0,r) = rescale*sum(a$mapa0(a0,a), pfa0(r,fp,a)*xf0(r,fp,a)*pfa.l(r,fp,a,t)*xf.l(r,fp,a,t)) ;
    tvomf(a0,r)    = sum(i0, (VDFPF(i0,a0,r) + VMFPF(i0,a0,r))) + sum(fp, EVFPF(fp,a0,r)) ;
 
 *  Income distribution
 
-   EVOSF(fp,a0,r) = rescale*sum(a$mapa0(a0,a), (1-kappaf.l(r,fp,a,t))*pf.l(r,fp,a,t)*xf.l(r,fp,a,t)/xScale(r,a)) ;
+   EVOSF(fp,a0,r) = rescale*sum(a$mapa0(a0,a),
+         (1-kappaf.l(r,fp,a,t))*pf0(r,fp,a)*xf0(r,fp,a)*pf.l(r,fp,a,t)*xf.l(r,fp,a,t)) ;
 
 *  Final demand
 
    loop(h,
-      VDPBF(i0,r) = reScale*sum(i$mapi0(i0,i), pd.l(r,i,t)*xd.l(r,i,h,t)/xScale(r,h)) ;
-      VDPPF(i0,r) = reScale*sum(i$mapi0(i0,i), pdp.l(r,i,h,t)*xd.l(r,i,h,t)/xScale(r,h)) ;
-      VMPBF(i0,r) = reScale*sum(i$mapi0(i0,i), pmt.l(r,i,t)*xm.l(r,i,h,t)/xScale(r,h)) ;
-      VMPPF(i0,r) = reScale*sum(i$mapi0(i0,i), pmp.l(r,i,h,t)*xm.l(r,i,h,t)/xScale(r,h)) ;
+      VDPBF(i0,r) = reScale*sum(i$mapi0(i0,i), pd0(r,i)*xd0(r,i,h)*pd.l(r,i,t)*xd.l(r,i,h,t)) ;
+      VDPPF(i0,r) = reScale*sum(i$mapi0(i0,i), pdp0(r,i,h)*xd0(r,i,h)*pdp.l(r,i,h,t)*xd.l(r,i,h,t)) ;
+      VMPBF(i0,r) = reScale*sum(i$mapi0(i0,i),
+         ((pmt0(r,i)*pmt.l(r,i,t))$(not MRIO) + (pma0(r,i,h)*pma.l(r,i,h,t))$MRIO)*xm0(r,i,h)*xm.l(r,i,h,t)) ;
+      VMPPF(i0,r) = reScale*sum(i$mapi0(i0,i), pmp0(r,i,h)*xm0(r,i,h)*pmp.l(r,i,h,t)*xm.l(r,i,h,t)) ;
    ) ;
 
    loop(gov,
-      VDGBF(i0,r) = reScale*sum(i$mapi0(i0,i), pd.l(r,i,t)*xd.l(r,i,gov,t)/xScale(r,gov)) ;
-      VDGPF(i0,r) = reScale*sum(i$mapi0(i0,i), pdp.l(r,i,gov,t)*xd.l(r,i,gov,t)/xScale(r,gov)) ;
-      VMGBF(i0,r) = reScale*sum(i$mapi0(i0,i), pmt.l(r,i,t)*xm.l(r,i,gov,t)/xScale(r,gov)) ;
-      VMGPF(i0,r) = reScale*sum(i$mapi0(i0,i), pmp.l(r,i,gov,t)*xm.l(r,i,gov,t)/xScale(r,gov)) ;
+      VDGBF(i0,r) = reScale*sum(i$mapi0(i0,i), pd0(r,i)*xd0(r,i,gov)*pd.l(r,i,t)*xd.l(r,i,gov,t)) ;
+      VDGPF(i0,r) = reScale*sum(i$mapi0(i0,i), pdp0(r,i,gov)*xd0(r,i,gov)*pdp.l(r,i,gov,t)*xd.l(r,i,gov,t)) ;
+      VMGBF(i0,r) = reScale*sum(i$mapi0(i0,i),
+         ((pmt0(r,i)*pmt.l(r,i,t))$(not MRIO) + (pma0(r,i,gov)*pma.l(r,i,gov,t))$MRIO)*xm0(r,i,gov)*xm.l(r,i,gov,t)) ;
+      VMGPF(i0,r) = reScale*sum(i$mapi0(i0,i), pmp0(r,i,gov)*xm0(r,i,gov)*pmp.l(r,i,gov,t)*xm.l(r,i,gov,t)) ;
    ) ;
 
    loop(inv,
-      VDIBF(i0,r) = reScale*sum(i$mapi0(i0,i), pd.l(r,i,t)*xd.l(r,i,inv,t)/xScale(r,inv)) ;
-      VDIPF(i0,r) = reScale*sum(i$mapi0(i0,i), pdp.l(r,i,inv,t)*xd.l(r,i,inv,t)/xScale(r,inv)) ;
-      VMIBF(i0,r) = reScale*sum(i$mapi0(i0,i), pmt.l(r,i,t)*xm.l(r,i,inv,t)/xScale(r,inv)) ;
-      VMIPF(i0,r) = reScale*sum(i$mapi0(i0,i), pmp.l(r,i,inv,t)*xm.l(r,i,inv,t)/xScale(r,inv)) ;
+      VDIBF(i0,r) = reScale*sum(i$mapi0(i0,i), pd0(r,i)*xd0(r,i,inv)*pd.l(r,i,t)*xd.l(r,i,inv,t)) ;
+      VDIPF(i0,r) = reScale*sum(i$mapi0(i0,i), pdp0(r,i,inv)*xd0(r,i,inv)*pdp.l(r,i,inv,t)*xd.l(r,i,inv,t)) ;
+      VMIBF(i0,r) = reScale*sum(i$mapi0(i0,i),
+         ((pmt0(r,i)*pmt.l(r,i,t))$(not MRIO) + (pma0(r,i,inv)*pma.l(r,i,inv,t))$MRIO)*xm0(r,i,inv)*xm.l(r,i,inv,t)) ;
+      VMIPF(i0,r) = reScale*sum(i$mapi0(i0,i), pmp0(r,i,inv)*xm0(r,i,inv)*pmp.l(r,i,inv,t)*xm.l(r,i,inv,t)) ;
    ) ;
 
 *  Bilateral trade
 
-   VXSBF(i0,r,rp) = reScale*sum(i$mapi0(i0,i), pe.l(r,i,rp,t)*xw.l(r,i,rp,t)) ;
-   VFOBF(i0,r,rp) = reScale*sum(i$mapi0(i0,i), pefob.l(r,i,rp,t)*xw.l(r,i,rp,t)) ;
-   VCIFF(i0,r,rp) = reScale*sum(i$mapi0(i0,i), pmcif.l(r,i,rp,t)*xw.l(r,i,rp,t)) ;
-   VMSBF(i0,r,rp) = reScale*sum(i$mapi0(i0,i), pm.l(r,i,rp,t)*xw.l(r,i,rp,t)) ;
+   VXSBF(i0,s,d) = reScale*sum(i$mapi0(i0,i), pe0(s,i,d)*xw0(s,i,d)*pe.l(s,i,d,t)*xw.l(s,i,d,t)) ;
+   VFOBF(i0,s,d) = reScale*sum(i$mapi0(i0,i), pefob0(s,i,d)*xw0(s,i,d)*pefob.l(s,i,d,t)*xw.l(s,i,d,t)) ;
+   VCIFF(i0,s,d) = reScale*sum(i$mapi0(i0,i), pmcif0(s,i,d)*xw0(s,i,d)*pmcif.l(s,i,d,t)*xw.l(s,i,d,t)) ;
+   VMSBF(i0,s,d) = reScale*(sum(i$mapi0(i0,i), pm0(s,i,d)*xw0(s,i,d)*pm.l(s,i,d,t)*xw.l(s,i,d,t))$(not MRIO)
+                 +          sum(i$mapi0(i0,i), sum(aa, pdma0(s,i,d,aa)*pdma.l(s,i,d,aa,t)
+                 *              xwa0(s,i,d,aa)*xwa.l(s,i,d,aa,t)))$MRIO) ;
 
 *  Margin exports
 
    loop(tmg,
-      vstf(m0,r) = reScale*sum(m$mapi0(m0,m), (pa.l(r,m,tmg,t)*xa.l(r,m,tmg,t)*xScale(r,tmg))) ;
+      vstf(m0,r) = reScale*sum(m$mapi0(m0,m), (pa0(r,m,tmg)*xa0(r,m,tmg)*pa.l(r,m,tmg,t)*xa.l(r,m,tmg,t))) ;
    ) ;
 
 *  Bilateral margins
 
-   VTWRF(m0, i0, r, rp) = reScale*sum((m,i)$(mapi0(m0,m) and mapi0(i0,i)), ptmg.l(m,t)*xmgm.l(m,r,i,rp,t)) ;
+   VTWRF(m0, i0, s, d) = reScale*sum((m,i)$(mapi0(m0,m) and mapi0(i0,i)),
+                              ptmg0(m)*xmgm0(m,s,i,d)*ptmg.l(m,t)*xmgm.l(m,s,i,d,t)) ;
 
-   vkbf(r)  = reScale*kstock.l(r,t) ;
-   savef(r) = reScale*rsav.l(r,t) ;
-   popf(r) = pop.l(r,t) ;
-   vdepf(r) = rescale*fdepr(r,t)*pi.l(r,t)*kstock.l(r,t) ;
+   vkbf(r)  = reScale*kstock0(r)*kstock.l(r,t) ;
+   savef(r) = reScale*rsav0(r)*rsav.l(r,t) ;
+   popf(r)  = pop.l(r,t) ;
+   vdepf(r) = rescale*fdepr(r,t)*pi0(r)*kstock0(r)*pi.l(r,t)*kstock.l(r,t) ;
 
 *  MAKE Matrices
-   MAKSF(i0,a0,r) = reScale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)), p.l(r,a,i,t)*x.l(r,a,i,t)) ;
-   MAKBF(i0,a0,r) = reScale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)), (1+prdtx.l(r,a,i,t))*p.l(r,a,i,t)*x.l(r,a,i,t)) ;
+   MAKSF(i0,a0,r) = reScale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)), p0(r,a,i)*x0(r,a,i)*p.l(r,a,i,t)*x.l(r,a,i,t)) ;
+   MAKBF(i0,a0,r) = reScale*sum((i,a)$(mapi0(i0,i) and mapa0(a0,a)),
+                        (1+prdtx.l(r,a,i,t))*p0(r,a,i)*x0(r,a,i)*p.l(r,a,i,t)*x.l(r,a,i,t)) ;
    PTAXF(i0,a0,r) = MAKBF(i0,a0,r) - MAKSF(i0,a0,r) ;
 ) ;
 
@@ -133,11 +145,46 @@ Parameter
 ;
 
 loop(t$sameas(t,"%1"),
-   VNTM(i0, r, rp) = reScale*sum(i$mapi0(i0,i), ntmAVE.l(r,i,rp,t)*pmcif.l(r,i,rp,t)*xw.l(r,i,rp,t)) ;
+   VNTM(i0, s, d) = reScale*sum(i$mapi0(i0,i),
+                        ntmAVE.l(s,i,d,t)*pmcif0(s,i,d)*xw0(s,i,d)*pmcif.l(s,i,d,t)*xw.l(s,i,d,t)) ;
 ) ;
 
 if(NTMFlag,
    execute_unload "%oDir%/%BaseName%NTM.gdx", VNTM ;
+) ;
+
+* --------------------------------------------------------------------------------------------------
+*
+*  MRIO data
+*
+* --------------------------------------------------------------------------------------------------
+
+Parameters
+   VIUWSF(i0, amrio,s,d)      "Bilateral imports by broad agent at border prices"
+   VIUMSF(i0, amrio,s,d)      "Bilateral imports by broad agent at post-tariff prices"
+;
+
+if(MRIO,
+   loop(t$sameas(t,"%1"),
+      VIUWSF(i0, "INT", s, d)
+         = rescale*sum((i,a)$mapi0(i0,i), pmcif0(s,i,d)*xwa0(s,i,d,a)*pmcif.l(s,i,d,t)*xwa.l(s,i,d,a,t)) ;
+      VIUMSF(i0, "INT", s, d)
+         = rescale*sum((i,a)$mapi0(i0,i), pdma0(s,i,d,a)*xwa0(s,i,d,a)*pdma.l(s,i,d,a,t)*xwa.l(s,i,d,a,t)) ;
+      VIUWSF(i0, "CONS", s, d)
+         = rescale*sum((i,fd)$(mapi0(i0,i) and (h(fd) or gov(fd))),
+               pmcif0(s,i,d)*xwa0(s,i,d,fd)*pmcif.l(s,i,d,t)*xwa.l(s,i,d,fd,t)) ;
+      VIUMSF(i0, "CONS", s, d)
+         = rescale*sum((i,fd)$(mapi0(i0,i) and (h(fd) or gov(fd))),
+               pdma0(s,i,d,fd)*xwa0(s,i,d,fd)*pdma.l(s,i,d,fd,t)*xwa.l(s,i,d,fd,t)) ;
+      VIUWSF(i0, "CGDS", s, d)
+         = rescale*sum((i,fd)$(mapi0(i0,i) and inv(fd)),
+               pmcif0(s,i,d)*xwa0(s,i,d,fd)*pmcif.l(s,i,d,t)*xwa.l(s,i,d,fd,t)) ;
+      VIUMSF(i0, "CGDS", s, d)
+         = rescale*sum((i,fd)$(mapi0(i0,i) and inv(fd)),
+               pdma0(s,i,d,fd)*xwa0(s,i,d,fd)*pdma.l(s,i,d,fd,t)*xwa.l(s,i,d,fd,t)) ;
+   ) ;
+
+   execute_unload "%oDir%/%BaseName%MRIO.gdx", VIUMSF=VIUMS, VIUWSF=VIUWS ;
 ) ;
 
 * ----------------------------------------------------------------------------------------

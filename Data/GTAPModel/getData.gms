@@ -97,3 +97,34 @@ $else
    mdi(i0,r)    = 0 ;
    mmi(i0,r)    = 0 ;
 $endif
+
+* --------------------------------------------------------------------------------------------------
+*
+*     Read in the MRIO data if requested
+*
+* --------------------------------------------------------------------------------------------------
+
+set amrio "MRIO broad agents" /
+   INT      "Aggregate intermediate demand"
+   CONS     "Private and public demand"
+   CGDS     "Investment demand"
+/ ;
+
+Parameters
+   viuws(i0, amrio,s,d)       "Bilateral imports by broad agent at border prices"
+   viums(i0, amrio,s,d)       "Bilateral imports by broad agent at post-tariff prices"
+;
+
+if(MRIO,
+   $$ifthen exist "%inDir%/%BaseName%MRIO.gdx"
+      execute_load "%inDir%/%BaseName%MRIO.gdx", viums, viuws ;
+   $$else
+      put screen ; put / ;
+      put "Requested MRIO version, but could not locate MRIO database" / ;
+      put "Check for existence or set the MRIO flag to 0" / ;
+      abort "No MRIO file" ;
+   $$endif
+else
+   viuws(i0, amrio, s, d) = 0 ;
+   viums(i0, amrio, s, d) = 0 ;
+) ;

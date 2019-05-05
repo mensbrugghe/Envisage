@@ -88,18 +88,18 @@ put msglog ;
 * --- calculate tax rates in starting point
 *
 
-rto(i,r)    $ vom(i,r)    = 1 - voa(i,r)/vom(i,r) ;
+rto(i,r)    $ vom(i,r)     = 1 - voa(i,r)/vom(i,r) ;
 rtf(fp,i,r) $ evfb(fp,i,r) = evfp(fp,i,r)/evfb(fp,i,r) - 1 ;
-rtpd(i,r)   $ vdpb(i,r)   = vdpp(i,r)/vdpb(i,r) - 1;
-rtpm(i,r)   $ vmpb(i,r)   = vmpp(i,r)/vmpb(i,r) - 1;
-rtgd(i,r)   $ vdgb(i,r)   = vdgp(i,r)/vdgb(i,r) - 1;
-rtgm(i,r)   $ vmgb(i,r)   = vmgp(i,r)/vmgb(i,r) - 1;
-rtid(i,r)   $ vdib(i,r)   = vdip(i,r)/vdib(i,r) - 1;
-rtim(i,r)   $ vmib(i,r)   = vmip(i,r)/vmib(i,r) - 1;
-rtfd(i,j,r) $ vdfb(i,j,r) = vdfp(i,j,r)/vdfb(i,j,r) - 1;
-rtfm(i,j,r) $ vmfb(i,j,r) = vmfp(i,j,r)/vmfb(i,j,r) - 1;
-rtxs(i,r,s) $ vfob(i,r,s) = 1-vfob(i,r,s)/vxsb(i,r,s);
-rtms(i,r,s) $ vcif(i,r,s) = vmsb(i,r,s)/vcif(i,r,s) - 1;
+rtpd(i,r)   $ vdpb(i,r)    = vdpp(i,r)/vdpb(i,r) - 1;
+rtpm(i,r)   $ vmpb(i,r)    = vmpp(i,r)/vmpb(i,r) - 1;
+rtgd(i,r)   $ vdgb(i,r)    = vdgp(i,r)/vdgb(i,r) - 1;
+rtgm(i,r)   $ vmgb(i,r)    = vmgp(i,r)/vmgb(i,r) - 1;
+rtid(i,r)   $ vdib(i,r)    = vdip(i,r)/vdib(i,r) - 1;
+rtim(i,r)   $ vmib(i,r)    = vmip(i,r)/vmib(i,r) - 1;
+rtfd(i,j,r) $ vdfb(i,j,r)  = vdfp(i,j,r)/vdfb(i,j,r) - 1;
+rtfm(i,j,r) $ vmfb(i,j,r)  = vmfp(i,j,r)/vmfb(i,j,r) - 1;
+rtxs(i,r,s) $ vfob(i,r,s)  = 1-vfob(i,r,s)/vxsb(i,r,s);
+rtms(i,r,s) $ vcif(i,r,s)  = vmsb(i,r,s)/vcif(i,r,s) - 1;
 
 *  14-May-2016: DvdM
 
@@ -248,7 +248,7 @@ positive variables
    vmgb_(i,r)     "Calibrated value of vmgb"
    vdib_(i,r)     "Calibrated value of vdib"
    vmib_(i,r)     "Calibrated value of vmib"
-   evfb_(fp,a,r)   "Calibrated value of evfb"
+   evfb_(fp,a,r)  "Calibrated value of evfb"
 ;
 
 scalar
@@ -791,7 +791,7 @@ loop(itr$(
    $$batinclude 'filter/itrlog.gms' before
 
    vdm_.l(i,r)      = vdm(i,r);
-   evfb_.l(fp,i,r)   = evfb(fp,i,r);
+   evfb_.l(fp,i,r)  = evfb(fp,i,r);
    vdfb_.l(i,j,r)   = vdfb(i,j,r);
    vmfb_.l(i,j,r)   = vmfb(i,j,r);
    vdpb_.l(i,r)     = vdpb(i,r);
@@ -803,16 +803,16 @@ loop(itr$(
 
 *  Set some bounds to avoid numerical problems (Arne keeps us on a short leash):
 
-   vdm_.lo(i,r)      $ vdm_.range(i,r)      = 0;      vdm_.up(i,r)      $ vdm_.range(i,r)      = gdp(r);
-   evfb_.lo(fp,i,r)   $ evfb_.range(fp,i,r)   = 0;      evfb_.up(fp,i,r)   $ evfb_.range(fp,i,r)   = gdp(r);
-   vdfb_.lo(i,j,r)   $ vdfb_.range(i,j,r)   = 0;      vdfb_.up(i,j,r)   $ vdfb_.range(i,j,r)   = gdp(r);
-   vmfb_.lo(i,j,r)   $ vmfb_.range(i,j,r)   = 0;      vmfb_.up(i,j,r)   $ vmfb_.range(i,j,r)   = gdp(r);
-   vdpb_.lo(i,r)     $ vdpb_.range(i,r)     = 0;      vdpb_.up(i,r)     $ vdpb_.range(i,r)     = gdp(r);
-   vdgb_.lo(i,r)     $ vdgb_.range(i,r)     = 0;      vdgb_.up(i,r)     $ vdgb_.range(i,r)     = gdp(r);
-   vdib_.lo(i,r)     $ vdib_.range(i,r)     = 0;      vdib_.up(i,r)     $ vdib_.range(i,r)     = gdp(r);
-   vmpb_.lo(i,r)     $ vmpb_.range(i,r)     = 0;      vmpb_.up(i,r)     $ vmpb_.range(i,r)     = gdp(r);
-   vmgb_.lo(i,r)     $ vmgb_.range(i,r)     = 0;      vmgb_.up(i,r)     $ vmgb_.range(i,r)     = gdp(r);
-   vmib_.lo(i,r)     $ vmib_.range(i,r)     = 0;      vmib_.up(i,r)     $ vmib_.range(i,r)     = gdp(r);
+   vdm_.lo(i,r)      $ vdm_.range(i,r)      = 0;      vdm_.up(i,r)      $ vdm_.range(i,r)      = 10*gdp(r);
+   evfb_.lo(fp,i,r)  $ evfb_.range(fp,i,r)  = 0;      evfb_.up(fp,i,r)  $ evfb_.range(fp,i,r)  = 10*gdp(r);
+   vdfb_.lo(i,j,r)   $ vdfb_.range(i,j,r)   = 0;      vdfb_.up(i,j,r)   $ vdfb_.range(i,j,r)   = 10*gdp(r);
+   vmfb_.lo(i,j,r)   $ vmfb_.range(i,j,r)   = 0;      vmfb_.up(i,j,r)   $ vmfb_.range(i,j,r)   = 10*gdp(r);
+   vdpb_.lo(i,r)     $ vdpb_.range(i,r)     = 0;      vdpb_.up(i,r)     $ vdpb_.range(i,r)     = 10*gdp(r);
+   vdgb_.lo(i,r)     $ vdgb_.range(i,r)     = 0;      vdgb_.up(i,r)     $ vdgb_.range(i,r)     = 10*gdp(r);
+   vdib_.lo(i,r)     $ vdib_.range(i,r)     = 0;      vdib_.up(i,r)     $ vdib_.range(i,r)     = 10*gdp(r);
+   vmpb_.lo(i,r)     $ vmpb_.range(i,r)     = 0;      vmpb_.up(i,r)     $ vmpb_.range(i,r)     = 10*gdp(r);
+   vmgb_.lo(i,r)     $ vmgb_.range(i,r)     = 0;      vmgb_.up(i,r)     $ vmgb_.range(i,r)     = 10*gdp(r);
+   vmib_.lo(i,r)     $ vmib_.range(i,r)     = 0;      vmib_.up(i,r)     $ vmib_.range(i,r)     = 10*gdp(r);
 
 *  Fix to zero any flows associated with omitted markets:
 
@@ -823,7 +823,7 @@ loop(itr$(
    vdib_.fx(i,r)     $ (vdm(i,r)  eq 0) = 0;
 
    vdm_.fx(i,r)      $ (vom(i,r)  eq 0) = 0;
-   evfb_.fx(fp,i,r)   $ (vom(i,r)  eq 0) = 0;
+   evfb_.fx(fp,i,r)  $ (vom(i,r)  eq 0) = 0;
    vdfb_.fx(i,j,r)   $ (vom(j,r)  eq 0) = 0;
    vmfb_.fx(i,j,r)   $ (vom(j,r)  eq 0) = 0;
    vdfb_.fx(i,j,r)   $ (vom(i,r)  eq 0) = 0;
@@ -877,7 +877,7 @@ loop(itr$(
       );
 
       vdm(i,rb)      = vdpb_.l(i,rb) + vdgb_.l(i,rb) + vdib_.l(i,rb) + sum(j,vdfb_.l(i,j,rb)) ;
-      evfb(fp,i,rb)   = evfb_.l(fp,i,rb);
+      evfb(fp,i,rb)  = evfb_.l(fp,i,rb);
       vdfb(i,j,rb)   = vdfb_.l(i,j,rb);
       vmfb(i,j,rb)   = vmfb_.l(i,j,rb);
       vdpb(i,rb)     = vdpb_.l(i,rb);

@@ -1,3 +1,9 @@
+* --------------------------------------------------------------------------------------------------
+*
+*  Code implemented between solution periods
+*
+* --------------------------------------------------------------------------------------------------
+
 if(years(tsim) gt FirstYear and ifDyn,
 
 *  Update variables
@@ -19,14 +25,19 @@ fcttx.fx(r,fp,a,tsim) = fcttx.l(r,fp,a,tsim) ;
 prdtx.fx(r,a,i,tsim)  = prdtx.l(r,a,i,tsim) ;
 exptx.fx(r,i,rp,tsim) = exptx.l(r,i,rp,tsim) ;
 imptx.fx(r,i,rp,tsim) = imptx.l(r,i,rp,tsim) ;
+if(MRIO,
+   imptxa.fx(r,i,rp,aa,tsim) = imptxa.l(r,i,rp,aa,tsim) ;
+) ;
 
 dtxshft.fx(r,i,aa,tsim) = dtxshft.l(r,i,aa,tsim) ;
 mtxshft.fx(r,i,aa,tsim) = mtxshft.l(r,i,aa,tsim) ;
 rtxshft.fx(r,aa,tsim)   = rtxshft.l(r,aa,tsim) ;
-dintx.fx(r,i,aa,tsim)$(not intxFlag(r,i,aa)) = dintx0(r,i,aa) + dtxshft.l(r,i,aa,tsim) + rtxshft.l(r,aa,tsim) ;
-mintx.fx(r,i,aa,tsim)$(not intxFlag(r,i,aa)) = mintx0(r,i,aa) + mtxshft.l(r,i,aa,tsim) + rtxshft.l(r,aa,tsim) ;
+dintx.fx(r,i,aa,tsim)$(not intxFlag(r,i,aa)) =
+   dintx0(r,i,aa) + dtxshft.l(r,i,aa,tsim) + rtxshft.l(r,aa,tsim) ;
+mintx.fx(r,i,aa,tsim)$(not intxFlag(r,i,aa)) =
+   mintx0(r,i,aa) + mtxshft.l(r,i,aa,tsim) + rtxshft.l(r,aa,tsim) ;
 
-ytaxshr.l(r,gy,t)    = ytax.l(r,gy,t) / regY.l(r,t) ;
+ytaxshr.l(r,gy,t)    = (ytax.l(r,gy,t) / regY.l(r,t)) * (ytax0(r,gy) / regY0(r)) ;
 
 *  Fix the numeraire
 
@@ -47,6 +58,12 @@ if(RoRFlag eq capShrFix,
 *  Technology variables
 
 tmarg.fx(r,i,rp,tsim) = tmarg.l(r,i,rp,tsim) ;
+
+*  Preference parameters
+
+betaP.fx(r,t) = betaP.l(r,t) ;
+betaG.fx(r,t) = betaG.l(r,t) ;
+betaS.fx(r,t) = betaS.l(r,t) ;
 
 *  Put a lower bound on prices
 
@@ -133,6 +150,11 @@ loop(t0,
    pfa.fx(r,fp,a,tsim)$(not xfFlag(r,fp,a)) = pfa.l(r,fp,a,t0) ;
    xft.fx(r,fm,tsim)$(not xftFlag(r,fm))    = 0 ;
    pft.fx(r,fm,tsim)$(not xftFlag(r,fm))    = pft.l(r,fm,t0) ;
+
+*  01-May-2019: MRIO
+   pma.fx(r,i,aa,tsim)$(not alpham(r,i,aa,tsim))  = pma.l(r,i,aa,t0) ;
+   xwa.fx(s,i,d,aa,tsim)$(not xwaFlag(s,i,d,aa))  = xwa.l(s,i,d,aa,t0) ;
+   pdma.fx(s,i,d,aa,tsim)$(not xwaFlag(s,i,d,aa)) = pdma.l(s,i,d,aa,t0) ;
 ) ;
 
 *  Fix lags
@@ -160,6 +182,7 @@ if(years(tsim) ne firstYear,
    pi.fx(r,tsim-1)           = pi.l(r,tsim-1) ;
 
    uh.fx(r,h,tsim-1)         = uh.l(r,h,tsim-1) ;
+   yc.fx(r,tsim-1)           = yc.l(r,tsim-1) ;
 
    pabs.fx(r,tsim-1)         = pabs.l(r,tsim-1) ;
    pmuv.fx(tsim-1)           = pmuv.l(tsim-1) ;

@@ -1,12 +1,27 @@
 $setargs theMacro theYear
 
-$macro initVar0(x, pFlag)              x.l(r, %theYear%) = x.l(r, %theYear%-1)*(1$pFlag + rwork(r)$(not pFlag))
-$macro initVar1(x,i__1, pFlag)         x.l(r, i__1, %theYear%) = x.l(r, i__1, %theYear%-1)*(1$pFlag + rwork(r)$(not pFlag))
-$macro initVar2(x,i__1, i__2, pFlag)   x.l(r, i__1, i__2, %theYear%) = x.l(r, i__1, i__2, %theYear%-1)*(1$pFlag + rwork(r)$(not pFlag))
+$macro initVar0(x, pFlag)                    \
+   x.l(r, %theYear%) = \
+   x.l(r, %theYear%-1)*(1$pFlag + rwork(r)$(not pFlag))
+$macro initVar1(x,i__1, pFlag)               \
+   x.l(r, i__1, %theYear%) = \
+   x.l(r, i__1, %theYear%-1)*(1$pFlag + rwork(r)$(not pFlag))
+$macro initVar2(x,i__1, i__2, pFlag)         \
+   x.l(r, i__1, i__2, %theYear%) = \
+   x.l(r, i__1, i__2, %theYear%-1)*(1$pFlag + rwork(r)$(not pFlag))
+$macro initVar3(x,i__1, i__2, i__3, pFlag)   \
+   x.l(r, i__1, i__2, i__3, %theYear%) = \
+   x.l(r, i__1, i__2, i__3, %theYear%-1)*(1$pFlag + rwork(r)$(not pFlag))
 
-$macro initVar0g(x, pFlag)             x.l(%theYear%) = x.l(%theYear%-1)*(1$pFlag + 1$(not pFlag))
-$macro initVar1g(x,i__1, pFlag)        x.l(i__1, %theYear%) = x.l(i__1, %theYear%-1)*(1$pFlag + 1$(not pFlag))
-$macro initVar4g(x,i__1, i__2, i__3, i__4, pFlag)   x.l(i__1, i__2, i__3, i__4, %theYear%) = x.l(i__1, i__2, i__3, i__4, %theYear%-1)*(1$pFlag + 1$(not pFlag))
+$macro initVar0g(x, pFlag)                          \
+   x.l(%theYear%) = \
+   x.l(%theYear%-1)*(1$pFlag + 1$(not pFlag))
+$macro initVar1g(x,i__1, pFlag)                     \
+   x.l(i__1, %theYear%) = \
+   x.l(i__1, %theYear%-1)*(1$pFlag + 1$(not pFlag))
+$macro initVar4g(x,i__1, i__2, i__3, i__4, pFlag)   \
+   x.l(i__1, i__2, i__3, i__4, %theYear%) = \
+   x.l(i__1, i__2, i__3, i__4, %theYear%-1)*(1$pFlag + 1$(not pFlag))
 
 %theMacro%1(nd,a,0) ;
 %theMacro%1(va,a,0) ;
@@ -58,6 +73,17 @@ $macro initVar4g(x,i__1, i__2, i__3, i__4, pFlag)   x.l(i__1, i__2, i__3, i__4, 
 %theMacro%2(xd,i,aa,0) ;
 %theMacro%2(xm,i,aa,0) ;
 
+* 01-May-2019: MRIO
+
+%theMacro%2(pma,i,aa,0) ;
+%theMacro%3(xwa,i,d,aa,0) ;
+%theMacro%3(pdma,i,d,aa,0) ;
+
+* 01-May-2019: Top level Armington
+%theMacro%1(xat,i,0) ;
+%theMacro%1(pat,i,0) ;
+
+%theMacro%1(xdt,i,0) ;
 %theMacro%1(xmt,i,0) ;
 %theMacro%2(xw,i,rp,0) ;
 %theMacro%1(pmt,i,1) ;
